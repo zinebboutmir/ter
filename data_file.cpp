@@ -1,6 +1,6 @@
 #ifndef _DATA_FILE_CPP
 
-#include "DataFile.h"
+#include "data_file.h"
 #include <toml/toml.hpp>
 #include <fstream>
 #include <iostream>
