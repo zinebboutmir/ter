@@ -6,7 +6,12 @@ cmake_minimum_required( VERSION 3.0 )
 set( CXX_STANDARD_REQUIRED On )
 set( CXX_STANDARD C++11 )
 
+<<<<<<< HEAD
 set( LIBRARY_PATH_EIGEN "${CMAKE_SOURCE_DIR}/libraries/eigen" )
+=======
+set( LIBRARY_PATH_EIGEN "../2A/PG201/pg201-students-m2-tp2b-$USER/libraries/eigen/" )
+set (LIBRARY_PATH_TOML "libraries/toml/")
+>>>>>>> 4b80860fae9bf76fa01849d115000ced2fbb504b
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "build/" )
 
@@ -41,7 +46,11 @@ set( PROJECT_COMPILATION_FILE_LIST toml/toml.hpp data_file.cpp Mesh2D.cpp  solve
 add_executable( ${TARGET_NAME} ${PROJECT_COMPILATION_FILE_LIST} )
 
 # Ajoute les répertoires des bibliothèques liées, ici Eigen et les petites biblio locales au projet.
+<<<<<<< HEAD
 target_include_directories( ${TARGET_NAME} PUBLIC "${LIBRARY_PATH_EIGEN}" "libraries" )
+=======
+target_include_directories( ${TARGET_NAME} PUBLIC "${LIBRARY_PATH_EIGEN}" "libraries" "${lIBRARY_PATH_TOML}" "librairies" )
+>>>>>>> 4b80860fae9bf76fa01849d115000ced2fbb504b
 
 # Fin des options spécifiques à ce projet.
 ##################
