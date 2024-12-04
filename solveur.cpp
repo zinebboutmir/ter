@@ -2,6 +2,8 @@
 #include <Eigen/Dense>
 #include <cmath>
 
+#include"solveur.h"
+
 using namespace std;
 using namespace Eigen;
 

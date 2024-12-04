@@ -2,11 +2,13 @@
 #include <Eigen/Dense>
 #include <cmath>
 
+#include"solveur.h"
+
 using namespace std;
 using namespace Eigen;
 
 
-int main
+int main()
 {
     MatrixXd A(3, 3);
     A << 4, 12, -16,
@@ -20,7 +22,7 @@ int main
 
     // Afficher la matrice L
     cout << "Matrice L*Transpose(L) (décomposition de Cholesky) :" << endl;
-    cout << L.Transpose()*L << endl;
+    cout << L*L.transpose() << endl;
 
     return 0;
 }
