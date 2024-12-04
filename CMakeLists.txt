@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.0 )
 set( CXX_STANDARD_REQUIRED On )
 set( CXX_STANDARD C++11 )
 
-set( LIBRARY_PATH_EIGEN "../2A/PG201/pg201-students-m2-tp2b-$USER/libraries/eigen/" )
+set( LIBRARY_PATH_EIGEN "${CMAKE_SOURCE_DIR}/libraries/eigen" )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "build/" )
 
@@ -32,16 +32,16 @@ set( CMAKE_BUILD_TYPE "Debug" )
 
 # Nom de l'exécutable qui sera créé dans le répertoire "build/".
 # Nous ajoutons "Debug" ou "Release" au nom de l'exécutable afin de facilement les différencier.
-set( TARGET_NAME "tp5_fv_2d_${CMAKE_BUILD_TYPE}" )
+set( TARGET_NAME "ter_${CMAKE_BUILD_TYPE}" )
 
 # Liste *exhaustive* des fichiers à compiler ensemble.
-set( PROJECT_COMPILATION_FILE_LIST data_file.cpp Mesh2D.cpp image.cpp solveur.cpp main.cpp )
+set( PROJECT_COMPILATION_FILE_LIST toml/toml.hpp data_file.cpp Mesh2D.cpp  solveur.cpp main.cpp )
 
 # Précise que l'exécutable sera à assembler avec ces fichiers compilés.
 add_executable( ${TARGET_NAME} ${PROJECT_COMPILATION_FILE_LIST} )
 
 # Ajoute les répertoires des bibliothèques liées, ici Eigen et les petites biblio locales au projet.
-target_include_directories( ${TARGET_NAME} PUBLIC "${LIBRARY_PATH_EIGEN}" "src/libraries" )
+target_include_directories( ${TARGET_NAME} PUBLIC "${LIBRARY_PATH_EIGEN}" "libraries" )
 
 # Fin des options spécifiques à ce projet.
 ##################
