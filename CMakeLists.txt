@@ -7,6 +7,7 @@ set( CXX_STANDARD_REQUIRED On )
 set( CXX_STANDARD C++11 )
 
 set( LIBRARY_PATH_EIGEN "../2A/PG201/pg201-students-m2-tp2b-$USER/libraries/eigen/" )
+set (LIBRARY_PATH_TOML "libraries/toml/")
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "build/" )
 
@@ -41,7 +42,7 @@ set( PROJECT_COMPILATION_FILE_LIST data_file.cpp Mesh2D.cpp image.cpp solveur.cp
 add_executable( ${TARGET_NAME} ${PROJECT_COMPILATION_FILE_LIST} )
 
 # Ajoute les répertoires des bibliothèques liées, ici Eigen et les petites biblio locales au projet.
-target_include_directories( ${TARGET_NAME} PUBLIC "${LIBRARY_PATH_EIGEN}" "src/libraries" )
+target_include_directories( ${TARGET_NAME} PUBLIC "${LIBRARY_PATH_EIGEN}" "libraries" "${lIBRARY_PATH_TOML}" "librairies" )
 
 # Fin des options spécifiques à ce projet.
 ##################

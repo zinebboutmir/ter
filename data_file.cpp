@@ -113,4 +113,3 @@ DataFile::DataFile(std::string file_name)
 
 #define _DATA_FILE_CPP
 #endif
-s
