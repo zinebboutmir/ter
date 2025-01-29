@@ -71,6 +71,30 @@ void chol(const MatrixXd& A, MatrixXd& L) {
 }
 
 
+void reschol(MatrixXd& L, const VectorXd& b, VectorXd& x) {
+    int n = b.size();
+    VectorXd Y(n);
 
+    // Résolution de L*Y=b 
+    for (int i = 0; i < n; ++i) {
+        Y = b;
+        for (int j = 0; j < i; ++j) {
+            Y(i) -= L(i, j) * Y(j);
+        }
+        Y(i) /= L(i, i);
+    }
+
+    // Transposition de L (équivalent à L = transpose(L))
+    MatrixXd L_transpose = L.transpose();
+
+    // Résolution de L^T * x = Y (substitution arrière)
+    for (int i = n - 1; i >= 0; --i) {
+        x(i) = Y(i);
+        for (int j = i + 1; j < n; ++j) {
+            x(i) -= L_transpose(i, j) * x(j);
+        }
+        x(i) /= L_transpose(i, i);
+    }
+}
 
 
