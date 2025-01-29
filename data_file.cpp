@@ -111,10 +111,5 @@
 //    + this->_results + "/params.txt").c_str());
 // }
 
-<<<<<<< HEAD
 // #define _DATA_FILE_CPP
 // #endif
-=======
-#define _DATA_FILE_CPP
-#endif
->>>>>>> 4b80860fae9bf76fa01849d115000ced2fbb504b
