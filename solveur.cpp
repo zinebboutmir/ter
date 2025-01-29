@@ -97,4 +97,29 @@ void reschol(MatrixXd& L, const VectorXd& b, VectorXd& x) {
     }
 }
 
+void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x, const VectorXd& x0, int Nmax = 1000, double eps = 1e-6) {
+    int n = b.size();
+    
+    // Initialisation
+    x = x0;                  
+    VectorXd r = b - A * x0; 
+    VectorXd p = r;          
+    double rhoPrev = r.dot(r); 
+    int k = 0;
+    
+    while (r.norm() / b.norm() > eps && k < Nmax) {
+        
+        VectorXd q = A * p;    
+        double delta = p.dot(q); 
+        double alpha = rhoPrev / delta; 
+        x = x + alpha * p; 
+        r = r - alpha * q; 
+        double rho = r.dot(r); 
+        double gamma = rho / rhoPrev; 
+        p = r + gamma * p; 
+        rhoPrev = rho; 
+        
+        k++; 
+    }
+}
 
