@@ -112,5 +112,10 @@ DataFile::DataFile(std::string file_name)
 }
 
 
+<<<<<<< HEAD
+// #define _DATA_FILE_CPP
+// #endif
+=======
 #define _DATA_FILE_CPP
 #endif
+>>>>>>> f210e58241db5db547d5d7be22f098f7b007678e
