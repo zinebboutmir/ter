@@ -107,8 +107,9 @@ MatrixXd computeKe(
 
 int main() {
     // Exemple : propriétés du matériau
-    double E = 210e9; // Module de Young en Pascals
-    double nu = 0.3;  // Coefficient de Poisson
+    double E = 150e9; // Module de Young en Pascals
+    double nu = 0.25;  // Coefficient de Poisson
+    double g=9.81;
 
     // Calcul de la matrice D
     MatrixXd D = computeD(E, nu);
