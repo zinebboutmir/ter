@@ -1,8 +1,9 @@
 #include <iostream>
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <cmath>
 
-#include"solveur.h"
+#include "solveur.h"
 
 using namespace std;
 using namespace Eigen;
@@ -97,4 +98,34 @@ void reschol(MatrixXd& L, const VectorXd& b, VectorXd& x) {
     }
 }
 
+<<<<<<< HEAD
+void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x, const VectorXd& x0, int Nmax, double eps) {
+    int n = b.size();
+=======
+void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x,VectorXd& x_0, int Nmax , double eps ) {
+    //int n = b.size();
+>>>>>>> 9497bfd442242df8505ee812cb72c5606646a694
+    
+    // Initialisation
+    x = x_0;                  
+    VectorXd r = b - A * x_0; 
+    VectorXd p = r;          
+    double rhoPrev = r.dot(r); 
+    int k = 0;
+    
+    while (r.norm() / b.norm() > eps && k < Nmax) {
+        
+        VectorXd q = A * p;    
+        double delta = p.dot(q); 
+        double alpha = rhoPrev / delta; 
+        x = x + alpha * p; 
+        r = r - alpha * q; 
+        double rho = r.dot(r); 
+        double gamma = rho / rhoPrev; 
+        p = r + gamma * p; 
+        rhoPrev = rho; 
+        
+        k++; 
+    }
+}
 

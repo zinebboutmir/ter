@@ -111,5 +111,9 @@ DataFile::DataFile(std::string file_name)
    + this->_results + "/params.txt").c_str());
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c6aedabaa39ea83aa400c645a1d69f158a0a7a46
 #define _DATA_FILE_CPP
 #endif
