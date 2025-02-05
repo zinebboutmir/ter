@@ -69,10 +69,7 @@ void printMatrix(const vector<vector<double>>& matrix) {
     }
 }
 
-MatrixXd computeKe(
-    const MatrixXd& B, 
-    const MatrixXd& D, 
-    double area) 
+MatrixXd computeKe( const MatrixXd& B,  const MatrixXd& D,  double area) 
 {
     size_t rows = B.rows();
     size_t cols = B.cols();
@@ -110,6 +107,7 @@ MatrixXd computeKe(
     return Ke;
 }
 
+
 int main(int argc, char** argv) {
 
     if (argc < 2)
@@ -138,37 +136,49 @@ int main(int argc, char** argv) {
 
 
     mesh->Read_mesh(data_file->Get_mesh_name());
+    const std::vector<Triangle>& triangles = mesh->Get_triangles();
     // readMsh(fichier,sommet_droite,sommet_gauche,elements)
 
-    
-    // Calcul de la matrice D
-    MatrixXd D = computeD(E, nu);
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Matrice D:" << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
-    //printMatrix(D);
+    for (int i=0;i<=mesh->Get_triangles().size();++i)
+    {
+        Vector3i tri = triangles[i].Get_vertices();
+        cout<<tri<<endl;
+       
+        // Calcul de la matrice D
+        MatrixXd D = computeD(E, nu);
+        std::cout << "-------------------------------------" << std::endl;
+        std::cout << "Matrice D:" << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+        //printMatrix(D);
 
-    // Coordonnées des nœuds d'un élément triangulaire
-    vector<pair<double, double>> nodes = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
+        // Coordonnées des nœuds d'un élément triangulaire
+        vector<pair<double, double>> nodes = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
 
-    // Calcul de la matrice B et de l'aire
-   auto result = computeB(nodes);
-    MatrixXd B = result.first;
-    double area = result.second;
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Matrice B:" << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
-    //printMatrix(B);
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Aire du triangle: " << area << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
+        // Calcul de la matrice B et de l'aire
+        auto result = computeB(nodes);
+        MatrixXd B = result.first;
+      //  double area = result.second;
+        std::cout << "-------------------------------------" << std::endl;
+        std::cout << "Matrice B:" << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+        //printMatrix(B);
+        std::cout << "-------------------------------------" << std::endl;
+       // std::cout << "Aire du triangle: " << area << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+         double area=mesh->Get_triangles_area()[i];
+        // computeKe( const MatrixXd& B,  const MatrixXd& D,  double area) 
 
-    // Calcul de la matrice de rigidité élémentaire Ke
-    MatrixXd Ke = computeKe(B, D, area);
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
-    //printMatrix(Ke);
+        // Calcul de la matrice de rigidité élémentaire Ke
+        MatrixXd Ke = computeKe(B, D, area);
+        MatrixXd K=0*Ke;
+        K+=Ke;
+        std::cout << "-------------------------------------" << std::endl;
+        std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+        //printMatrix(Ke);
+
+    }
+
 
     return 0;
 }
