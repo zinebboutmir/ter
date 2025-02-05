@@ -17,21 +17,12 @@ DataFile::DataFile(std::string file_name)
    // Other
    const auto& other = toml::find(config, "other");
    this->_mesh_name = toml::find<std::string>(other, "mesh");
-   this->_mu = toml::find<double>(other, "mu");
-   this->_numerical_flux_choice = toml::find<std::string>(other, "numerical_flux");
-   this->_results = toml::find<std::string>(other, "results");
 
-   // Time
-   const auto& time = toml::find(config, "time");
-   this->_t0 = toml::find<double>(time, "t0");
-   this->_tfinal = toml::find<double>(time, "tfinal");
-   this->_dt = toml::find<double>(time, "dt");
-   this->_scheme = toml::find<std::string>(time, "scheme");
-
-   // Boundary conditions
-   const auto& BC = toml::find(config, "BC");
-   this->_BC_ref = toml::find<std::vector<int> >(BC, "ref");
-   this->_BC_type = toml::find<std::vector<std::string> >(BC, "BC");
+   
+   // // Boundary conditions
+   // const auto& BC = toml::find(config, "BC");
+   // this->_BC_ref = toml::find<std::vector<int> >(BC, "ref");
+   // this->_BC_type = toml::find<std::vector<std::string> >(BC, "BC");
 
    // Scenarii
    const auto& scenarii = toml::find(config, "scenarii");
@@ -43,23 +34,10 @@ DataFile::DataFile(std::string file_name)
       this->_P_kettle = toml::find<double>(physics, "P_kettle");
    }
 
-   if ((this->_numerical_flux_choice != "centered") && (this->_numerical_flux_choice != "upwind"))
-   {
-      cout << "Only centered and upwind numerical flows are implemented." << endl;
-      exit(0);
-   }
+   
 
-   if ((this->_scheme != "ExplicitEuler") && (this->_scheme != "ImplicitEuler"))
-   {
-      cout << "Only Explicit Euler and Implicit Euler schemes are implemented." << endl;
-      exit(0);
-   }
-   if (this->_scheme == "ExplicitEuler")
-   {
-      cout << "Beware to the CFL condition." << endl;
-   }
 
-   if ((this->_which_scenario == "diffusion_hom_neumann") || (this->_which_scenario == "diffusion_all_BC")
+   if ((this->_which_scenario == "cas_test") || (this->_which_scenario == "diffusion_all_BC")
    || (this->_which_scenario == "advection_hom_neumann") ||  (this->_which_scenario == "advection_all_BC")
    || (this->_which_scenario == "advection_diffusion_all_BC") )
    {
@@ -84,6 +62,7 @@ DataFile::DataFile(std::string file_name)
       cout << "-------------------------------------------------" << endl;
       exit(0);
    }
+  
 
 
    if ( (this->_which_scenario == "advection_hom_neumann") && (fabs(this->_mu) > 1e-6) )
@@ -111,9 +90,5 @@ DataFile::DataFile(std::string file_name)
    + this->_results + "/params.txt").c_str());
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c6aedabaa39ea83aa400c645a1d69f158a0a7a46
 #define _DATA_FILE_CPP
 #endif

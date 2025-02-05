@@ -3,6 +3,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <cmath>
+#include "Mesh2D.h"
+#include "data_file.h"
+
 
 using namespace std;
 using namespace Eigen;
@@ -11,14 +14,14 @@ using namespace Eigen;
 
 
 // étape 1 : Fonction pour lire le fichier de maillage
-void readMsh(const string& filename, 
-             vector<double>& nodeX, vector<double>& nodeY, 
-             vector<vector<int>>& elements) {
-    // Simule la lecture, adapter selon le format .msh
-    nodeX = {0.0, 1.0, 0.0};
-    nodeY = {0.0, 0.0, 1.0};
-    elements = {{0, 1, 2}};  // Triangle formé par les nœuds 0, 1, 2
-}
+// void readMsh(const string& filename, 
+//              vector<double>& nodeX, vector<double>& nodeY, 
+//              vector<vector<int>>& elements) {
+//     // Simule la lecture, adapter selon le format .msh
+//     nodeX = {0.0, 1.0, 0.0};
+//     nodeY = {0.0, 0.0, 1.0};
+//     elements = {{0, 1, 2}};  // Triangle formé par les nœuds 0, 1, 2
+// }
 
 //étape 2 : Fonction pour calculer la matrice D (propriétés du matériau)
 MatrixXd computeD(double E, double nu) {
@@ -107,10 +110,24 @@ MatrixXd computeKe(
     return Ke;
 }
 
-int main() {
+int main(int argc, char** argv) {
 
-    // Mesh2D* mesh = new Mesh2D(data_file->Get_BC_ref(),data_file->Get_BC_type());
-    // string fichier=mesh->Read_mesh(data_file->Get_mesh_name());
+    if (argc < 2)
+   {
+      cout << "Please, enter the name of your data file." << endl;
+      cout << "Usage: " << argv[0] << " <file.toml>" << endl;
+      exit(0);
+   }
+
+   const string data_file_name = argv[1];
+
+   // ----------------------- Fichier de données --------------------------------
+   DataFile* data_file = new DataFile(data_file_name);
+
+
+
+    Mesh2D* mesh = new Mesh2D(data_file->Get_BC_ref(),data_file->Get_BC_type());
+
     // vector<double> sommet_droite=data_file->Get_vertices()(i,0);
     // vector<double> sommet_gauche=data_file->Get_vertices()(i,0)
 
@@ -119,11 +136,11 @@ int main() {
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
 
+
+    mesh->Read_mesh(data_file->Get_mesh_name());
     // readMsh(fichier,sommet_droite,sommet_gauche,elements)
 
-
-
-
+    
     // Calcul de la matrice D
     MatrixXd D = computeD(E, nu);
     std::cout << "-------------------------------------" << std::endl;
