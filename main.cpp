@@ -22,11 +22,12 @@ void readMsh(const string& filename,
 
 //étape 2 : Fonction pour calculer la matrice D (propriétés du matériau)
 MatrixXd computeD(double E, double nu) {
-    double factor = E / (1 - nu * nu);
+    double factor = E /( (1 - 2*nu)*(1+nu));
     Matrix3d D;
-    D << factor, factor * nu, 0,
-        factor * nu, factor, 0,
-        0, 0, factor * (1 - nu) / 2;
+    D << (1-nu),  nu, 0,
+        nu, 1-nu, 0,
+        0, 0, (1 - 2*nu) / 2;
+    D= D*factor;
     return  D;
 }
 
