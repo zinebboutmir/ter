@@ -17,7 +17,7 @@ void readMsh(const string& filename,
     // Simule la lecture, adapter selon le format .msh
     nodeX = {0.0, 1.0, 0.0};
     nodeY = {0.0, 0.0, 1.0};
-    elements = {{0, 1, 2}};  // Triangle formé par les nœuds 0, 1, 2
+    elements = {{1, 2, 3}};  // Triangle formé par les nœuds 1, 2, 3
 }
 
 //étape 2 : Fonction pour calculer la matrice D (propriétés du matériau)
@@ -120,9 +120,6 @@ int main() {
     double g=9.81;
 
     // readMsh(fichier,sommet_droite,sommet_gauche,elements)
-
-
-
 
     // Calcul de la matrice D
     MatrixXd D = computeD(E, nu);
