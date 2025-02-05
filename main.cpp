@@ -9,6 +9,7 @@ using namespace Eigen;
 
 // g++ -std=c++11 -o run main.cpp
 
+
 // étape 1 : Fonction pour lire le fichier de maillage
 void readMsh(const string& filename, 
              vector<double>& nodeX, vector<double>& nodeY, 
@@ -106,10 +107,21 @@ MatrixXd computeKe(
 }
 
 int main() {
+
+    // Mesh2D* mesh = new Mesh2D(data_file->Get_BC_ref(),data_file->Get_BC_type());
+    // string fichier=mesh->Read_mesh(data_file->Get_mesh_name());
+    // vector<double> sommet_droite=data_file->Get_vertices()(i,0);
+    // vector<double> sommet_gauche=data_file->Get_vertices()(i,0)
+
     // Exemple : propriétés du matériau
     double E = 150e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
+
+    // readMsh(fichier,sommet_droite,sommet_gauche,elements)
+
+
+
 
     // Calcul de la matrice D
     MatrixXd D = computeD(E, nu);
