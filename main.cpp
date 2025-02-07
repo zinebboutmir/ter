@@ -103,7 +103,7 @@ MatrixXd computeKe( const MatrixXd& B,  const MatrixXd& D,  double area)
     //         Ke[i][j] *= area;
     //     }
     // }
-
+    Ke=Ke*area;
     return Ke;
 }
 
@@ -137,14 +137,16 @@ int main(int argc, char** argv) {
 
     mesh->Read_mesh(data_file->Get_mesh_name());
     const std::vector<Triangle>& triangles = mesh->Get_triangles();
+    MatrixXi table_corresp(mesh->Get_triangles().size(),3);
+       
     // readMsh(fichier,sommet_droite,sommet_gauche,elements)
 
-    for (int i=0;i<=mesh->Get_triangles().size();++i)
+    for (long unsigned int i=0;i<mesh->Get_triangles().size();++i)
     {
         Vector3i tri = triangles[i].Get_vertices();
-        cout<<tri<<endl;
+        //cout<<tri<<endl;
        
-        // Calcul de la matrice D
+        table_corresp.row(i)=tri;
         MatrixXd D = computeD(E, nu);
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice D:" << std::endl;
@@ -170,6 +172,7 @@ int main(int argc, char** argv) {
 
         // Calcul de la matrice de rigidité élémentaire Ke
         MatrixXd Ke = computeKe(B, D, area);
+        // Assemblage 
         MatrixXd K=0*Ke;
         K+=Ke;
         std::cout << "-------------------------------------" << std::endl;
@@ -178,6 +181,7 @@ int main(int argc, char** argv) {
         //printMatrix(Ke);
 
     }
+ 
 
 
     return 0;
