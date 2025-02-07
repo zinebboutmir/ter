@@ -14,7 +14,7 @@ using namespace Eigen;
 
 
 // étape 1 : Fonction pour lire le fichier de maillage
-<<<<<<< HEAD
+
 void readMsh(const string& filename, 
              vector<double>& nodeX, vector<double>& nodeY, 
              vector<vector<int>>& elements) {
@@ -23,16 +23,7 @@ void readMsh(const string& filename,
     nodeY = {0.0, 0.0, 1.0};
     elements = {{1, 2, 3}};  // Triangle formé par les nœuds 1, 2, 3
 }
-=======
-// void readMsh(const string& filename, 
-//              vector<double>& nodeX, vector<double>& nodeY, 
-//              vector<vector<int>>& elements) {
-//     // Simule la lecture, adapter selon le format .msh
-//     nodeX = {0.0, 1.0, 0.0};
-//     nodeY = {0.0, 0.0, 1.0};
-//     elements = {{0, 1, 2}};  // Triangle formé par les nœuds 0, 1, 2
-// }
->>>>>>> 5fcbed9ee2fd15de7b86344dc88fa5b96c9671b1
+
 
 //étape 2 : Fonction pour calculer la matrice D (propriétés du matériau)
 MatrixXd computeD(double E, double nu) {
@@ -62,11 +53,12 @@ pair<MatrixXd , double> computeB(const vector<pair<double, double>>& nodes) {
 
     // Construction de la matrice B
     MatrixXd B (3,3);
-    B<< b1 / (2 * area), 0, b2 / (2 * area), 0, b3 / (2 * area), 0,
-        0, c1 / (2 * area), 0, c2 / (2 * area), 0, c3 / (2 * area),
-        c1 / (2 * area), b1 / (2 * area), c2 / (2 * area), b2 / (2 * area), c3 / (2 * area), b3 / (2 * area);
-    
+    B<< b1, 0, b2 , 0, b3 , 0,
+        0, c1 , 0, c2, 0, c3 ,
+        c1 , b1 , c2 , b2 , c3, b3 ;
 
+    B= B*2*area;
+    
     return {B, area};
 }
 
@@ -117,7 +109,7 @@ MatrixXd computeKe(
     //         Ke[i][j] *= area;
     //     }
     // }
-
+    Ke= Ke*area;
     return Ke;
 }
 
@@ -143,7 +135,7 @@ int main(int argc, char** argv) {
     // vector<double> sommet_gauche=data_file->Get_vertices()(i,0)
 
     // Exemple : propriétés du matériau
-    double E = 150e9; // Module de Young en Pascals
+    double E = 15e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
 
@@ -151,11 +143,6 @@ int main(int argc, char** argv) {
     mesh->Read_mesh(data_file->Get_mesh_name());
     // readMsh(fichier,sommet_droite,sommet_gauche,elements)
 
-<<<<<<< HEAD
-=======
-    
->>>>>>> 5fcbed9ee2fd15de7b86344dc88fa5b96c9671b1
-    // Calcul de la matrice D
     MatrixXd D = computeD(E, nu);
     std::cout << "-------------------------------------" << std::endl;
     std::cout << "Matrice D:" << std::endl;
@@ -187,31 +174,3 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-// =======
-// #include <Eigen/Dense>
-// #include <cmath>
-
-// #include"solveur.h"
-
-// using namespace std;
-// using namespace Eigen;
-
-
-// int main()
-// {
-//     MatrixXd A(3, 3);
-//     A << 4, 12, -16,
-//          12, 37, -43,
-//          -16, -43, 98;
-
-//     int n = A.rows();
-//     MatrixXd L(n, n);
-
-//     chol(A, L);
-
-//     // Afficher la matrice L
-//     cout << "Matrice L*Transpose(L) (décomposition de Cholesky) :" << endl;
-//     cout << L*L.transpose() << endl;
-
-//     return 0;
-// }
