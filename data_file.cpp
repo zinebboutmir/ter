@@ -20,9 +20,9 @@ DataFile::DataFile(std::string file_name)
 
    
    // // Boundary conditions
-   // const auto& BC = toml::find(config, "BC");
-   // this->_BC_ref = toml::find<std::vector<int> >(BC, "ref");
-   // this->_BC_type = toml::find<std::vector<std::string> >(BC, "BC");
+   const auto& BC = toml::find(config, "BC");
+   this->_BC_ref = toml::find<std::vector<int> >(BC, "ref");
+   this->_BC_type = toml::find<std::vector<std::string> >(BC, "BC");
 
    // Scenarii
    const auto& scenarii = toml::find(config, "scenarii");

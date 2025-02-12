@@ -97,9 +97,9 @@ void reschol(MatrixXd& L, const VectorXd& b, VectorXd& x) {
         x(i) /= L_transpose(i, i);
     }
 }
-void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x, const VectorXd& x_0, int Nmax, double eps) {
-    int n = b.size();
 
+void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x, const VectorXd& x_0, int Nmax, double eps) {
+    //int n = b.size();
 
     // Initialisation
     x = x_0;                  

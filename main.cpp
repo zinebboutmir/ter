@@ -93,6 +93,7 @@ MatrixXd computeKe( const MatrixXd& B,  const MatrixXd& D,  double area, double 
     Ke = BtD*B;
 
     Ke= Ke*area*detJ;
+
     return Ke;
 }
 
@@ -122,6 +123,7 @@ int main(int argc, char** argv) {
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
+
     const vector<Triangle>& triangles = mesh->Get_triangles();
     const vector<Vertex>& vertices =mesh->Get_vertices();
     MatrixXi table_corresp (mesh->Get_triangles().size(),3);
@@ -147,6 +149,7 @@ int main(int argc, char** argv) {
         cout<<tri<<endl;
         table_corresp.row(i) =tri;
 
+
         //coordonnées réel des noeuds 
 
         nodes(0,0) = vertices[i].Get_coor()(0), nodes(0,1)=vertices[i].Get_coor()(1);
@@ -167,10 +170,12 @@ int main(int argc, char** argv) {
         // computeKe( const MatrixXd& B,  const MatrixXd& D,  double area) 
 
         // Calcul de la matrice de rigidité élémentaire Ke
+
         MatrixXd Ke = computeKe(B, D, area,detJ);
 
         //calcul de la matrice de rigidité globale
         K.block(3*i,3*i,3,3)+=Ke ;
+
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
@@ -178,6 +183,7 @@ int main(int argc, char** argv) {
         //nodes= Array32d::Zero();
 
     }
+
     delete mesh;
     delete data_file;
 
