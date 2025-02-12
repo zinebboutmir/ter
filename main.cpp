@@ -15,14 +15,15 @@ using namespace Eigen;
 
 // étape 1 : Fonction pour lire le fichier de maillage
 
-void readMsh(const string& filename, 
-             vector<double>& nodeX, vector<double>& nodeY, 
-             vector<vector<int>>& elements) {
-    // Simule la lecture, adapter selon le format .msh
-    nodeX = {0.0, 1.0, 0.0};
-    nodeY = {0.0, 0.0, 1.0};
-    elements = {{1, 2, 3}};  // Triangle formé par les nœuds 1, 2, 3
-}
+
+// void readMsh(const string& filename, 
+//              vector<double>& nodeX, vector<double>& nodeY, 
+//              vector<vector<int>>& elements) {
+//     // Simule la lecture, adapter selon le format .msh
+//     nodeX = {0.0, 1.0, 0.0};
+//     nodeY = {0.0, 0.0, 1.0};
+//     elements = {{1, 2, 3}};  // Triangle formé par les nœuds 1, 2, 3
+// }
 
 
 //étape 2 : Fonction pour calculer la matrice D (propriétés du matériau)
@@ -37,29 +38,29 @@ MatrixXd computeD(double E, double nu) {
 }
 
 // Fonction pour calculer la matrice B et l'aire d'un élément triangulaire
-pair<MatrixXd , double> computeB(const vector<pair<double, double>>& nodes) {
-    // Coordonnées des sommets du triangle
-    double x1 = nodes[0].first, y1 = nodes[0].second;
-    double x2 = nodes[1].first, y2 = nodes[1].second;
-    double x3 = nodes[2].first, y3 = nodes[2].second;
-    // nodes[1] fournit (x2,y2)
+pair <MatrixXd,double> computeB(MatrixXd& nodes, MatrixXd& N) {
 
-    // Calcul de l'aire du triangle
-    double area = 0.5 * abs(x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
+    //calcul de J
+
+    MatrixXd J= N*nodes;
+    double detJ= J(0,0)*J(1,1)-J(0,1)*J(1,0);
+
+    //construction de T
+    MatrixXd J_1= J.inverse();
+    MatrixXd T= J_1*N;
 
     // Coefficients pour les dérivées des fonctions de forme
-    double b1 = y2 - y3, b2 = y3 - y1, b3 = y1 - y2;
-    double c1 = x3 - x2, c2 = x1 - x3, c3 = x2 - x1;
+    double b1 = T(0,0), b2 = T(0,1), b3 = T(0,2);
+    double c1 = T(1,0), c2 = T(1,1), c3 = T(1,2);
 
     // Construction de la matrice B
-    MatrixXd B (3,3);
+    MatrixXd B (3,6);
     B<< b1, 0, b2 , 0, b3 , 0,
         0, c1 , 0, c2, 0, c3 ,
         c1 , b1 , c2 , b2 , c3, b3 ;
 
-    B= B*2*area;
     
-    return {B, area};
+    return {B,detJ};
 }
 
 // Fonction pour afficher une matrice
@@ -72,10 +73,7 @@ void printMatrix(const vector<vector<double>>& matrix) {
     }
 }
 
-MatrixXd computeKe(
-    const MatrixXd& B, 
-    const MatrixXd& D, 
-    double area) 
+MatrixXd computeKe( const MatrixXd& B,  const MatrixXd& D,  double area, double detJ) 
 {
     size_t rows = B.rows();
     size_t cols = B.cols();
@@ -89,29 +87,15 @@ MatrixXd computeKe(
     // Calcul de Bt * D
     MatrixXd BtD(cols, Dsize);
     BtD = B.transpose()*D;
-    // for (size_t i = 0; i < cols; ++i) {
-    //     for (size_t j = 0; j < Dsize; ++j) {
-    //         for (size_t k = 0; k < rows; ++k) {
-    //             BtD[i][j] += B[k][i] * D[k][j];
-    //         }
-    //     }
-    // }
 
     // Calcul de BtD * B
     MatrixXd Ke(cols,rows );
     Ke = BtD*B;
-    // for (size_t i = 0; i < cols; ++i) {
-    //     for (size_t j = 0; j < cols; ++j) {
-    //         for (size_t k = 0; k < rows; ++k) {
-    //             Ke[i][j] += BtD[i][k] * B[k][j];
-    //         }
-    //         // Multiplier par l'aire
-    //         Ke[i][j] *= area;
-    //     }
-    // }
-    Ke= Ke*area;
+
+    Ke= Ke*area*detJ;
     return Ke;
 }
+
 
 int main(int argc, char** argv) {
 
@@ -131,45 +115,71 @@ int main(int argc, char** argv) {
 
     Mesh2D* mesh = new Mesh2D(data_file->Get_BC_ref(),data_file->Get_BC_type());
 
-    // vector<double> sommet_droite=data_file->Get_vertices()(i,0);
-    // vector<double> sommet_gauche=data_file->Get_vertices()(i,0)
-
     // Exemple : propriétés du matériau
     double E = 15e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
 
-
+    // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
-    // readMsh(fichier,sommet_droite,sommet_gauche,elements)
+    const vector<Triangle>& triangles = mesh->Get_triangles();
+    const vector<Vertex>& vertices =mesh->Get_vertices();
+    MatrixXi table_corresp (mesh->Get_triangles().size(),3);
+    MatrixXd N(2,3);
+    N << -1, 1,0,
+        -1,0,1;
+ 
+    // Coordonnées des nœuds d'un élément triangulaire
+    MatrixXd nodes (3,2);
 
+    // Calcul de la matrice D
     MatrixXd D = computeD(E, nu);
     std::cout << "-------------------------------------" << std::endl;
     std::cout << "Matrice D:" << std::endl;
     std::cout << "-------------------------------------" << std::endl;
-    //printMatrix(D);
 
-    // Coordonnées des nœuds d'un élément triangulaire
-    vector<pair<double, double>> nodes = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
+    //definition de la taille de K
+    MatrixXd K(vertices.size(),vertices.size());
 
-    // Calcul de la matrice B et de l'aire
-   auto result = computeB(nodes);
-    MatrixXd B = result.first;
-    double area = result.second;
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Matrice B:" << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
-    //printMatrix(B);
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Aire du triangle: " << area << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
+    for (long unsigned int i=0;i<=mesh->Get_triangles().size();++i)
+    {
+        Vector3i tri = triangles[i].Get_vertices();
+        cout<<tri<<endl;
+        table_corresp.row(i) =tri;
 
-    // Calcul de la matrice de rigidité élémentaire Ke
-    MatrixXd Ke = computeKe(B, D, area);
-    std::cout << "-------------------------------------" << std::endl;
-    std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
-    //printMatrix(Ke);
+        //coordonnées réel des noeuds 
+
+        nodes(0,0) = vertices[i].Get_coor()(0), nodes(0,1)=vertices[i].Get_coor()(1);
+        nodes(1,0) = vertices[i].Get_coor()(0), nodes(1,1)=vertices[i].Get_coor()(1);
+        nodes(2,0) = vertices[i].Get_coor()(0), nodes(2,1)=vertices[i].Get_coor()(1);
+        // Calcul de la matrice B et de l'aire
+        auto results =computeB(nodes,N);
+        MatrixXd B =  results.first;
+        double detJ= results.second;
+        std::cout << "-------------------------------------" << std::endl;
+        std::cout << "Matrice B:" << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+
+        double area=mesh->Get_triangles_area()(i);
+        std::cout << "Aire du triangle: " << area << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+
+        // computeKe( const MatrixXd& B,  const MatrixXd& D,  double area) 
+
+        // Calcul de la matrice de rigidité élémentaire Ke
+        MatrixXd Ke = computeKe(B, D, area,detJ);
+
+        //calcul de la matrice de rigidité globale
+        K.block(3*i,3*i,3,3)+=Ke ;
+        std::cout << "-------------------------------------" << std::endl;
+        std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+        //printMatrix(Ke);
+        //nodes= Array32d::Zero();
+
+    }
+    delete mesh;
+    delete data_file;
 
     return 0;
 }
