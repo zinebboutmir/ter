@@ -103,65 +103,51 @@ VectorXd computeFe( const MatrixXd& B)
     VectorXd Fe(rows);
     VectorXd I(rows);
 
-    if (t2!=-1)     ///conditions de bord
-	{
-		// double distance=sqrt(pow(_msh->Get_triangles_center()(t1,0)-_msh->Get_triangles_center()(t2,0),2)+pow(_msh->Get_triangles_center()(t1,1)-_msh->Get_triangles_center()(t2,1),2));
+    
+	for (unsigned int i = 0; i < this->_msh->Get_edges().size(); i++)
+    {
 
+        int t1=this->_msh->Get_edges()[i].Get_T1();
+		int t2=this->_msh->Get_edges()[i].Get_T2();  
 
-		// double alpha_d=mu/distance;
-		// double beta_d=-mu/distance;
-
-		// double aire1=_msh->Get_triangles_area()(t1);
-		// double aire2=_msh->Get_triangles_area()(t2);
-
-		// double alpha=alpha_d+alpha_a;
-		// double beta=beta_d+beta_a;
-		
-
-			
-		// triplets.push_back({t1,t1,longueur*alpha/aire1});
-		// triplets.push_back({t1,t2,longueur*beta/aire1});
-		// triplets.push_back({t2,t2,-longueur*beta/aire2});
-		// triplets.push_back({t2,t1,-longueur*alpha/aire2});
-		// 	// en étudiant l'arete entre t1 et t2 on ajoute les contributions à t1 et t2
-		// 	// donc push back à ces mailles
-
-
-
-	}
-
-	else
-	{   
-
-        double g=9.81;
-        double rho=2000.;
-        double mu=0.25;
-        double h=25.;
-        double L=1;
-        double w=1000;
-
-
-		if (BC=="Neumann_homogene")
-		{
-            alpha=-rho*g*pow(h,2)*L/24.;
-            for (int i=0;i<6;i+=2)
-            {
-                I(i)=0;
-                I(i+1)=1;
-            }
-
-            Fe=alpha*I;
-
-
-		}
-		else if (BC="Neumann")
-		{	
-            alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
-	    }
+        if (t2!=-1)     
+        {
+            Fe(i)=0;
+        }
 
         else
-        {
+        {   
 
+            double g=9.81;
+            double rho=2000.;
+            double mu=0.25;
+            double h=25.;
+            double L=1;
+            double w=1000;
+
+
+            if (BC=="Neumann_homogene")
+            {
+                alpha=-rho*g*pow(h,2)*L/24.;
+                for (int i=0;i<6;i+=2)
+                {
+                    I(i)=0;
+                    I(i+1)=1;
+                }
+
+                Fe=alpha*I;
+
+
+            }
+            else if (BC="Neumann")
+            {	
+                alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
+            }
+
+            else if (BC="Dirichlet")
+            {
+
+            }
         }
     }
 
