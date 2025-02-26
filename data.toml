@@ -5,7 +5,7 @@ mesh = "Meshes/cas_test.mesh"
 # Boundary Conditions
 [BC]
 ref = [4,5,6]
-BC = ["Dirichlet","Neumann","Neumann"]
+BC = ["Dirichlet","Neumann_homogene","Neumann"]
 [scenarii]
 
 which_scenario = "cas_test"

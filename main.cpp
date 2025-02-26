@@ -103,6 +103,63 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
     return {Ke,Fe};
 }
 
+VectorXd computeFe( const MatrixXd& B)
+{
+    size_t rows=B.rows();
+    VectorXd Fe(rows);
+    VectorXd I(rows);
+
+    
+	for (unsigned int i = 0; i < this->_msh->Get_edges().size(); i++)
+    {
+
+        int t1=this->_msh->Get_edges()[i].Get_T1();
+		int t2=this->_msh->Get_edges()[i].Get_T2();  
+
+        if (t2!=-1)     
+        {
+            Fe(i)=0;
+        }
+
+        else
+        {   
+
+            double g=9.81;
+            double rho=2000.;
+            double mu=0.25;
+            double h=25.;
+            double L=1;
+            double w=1000;
+
+
+            if (BC=="Neumann_homogene")
+            {
+                alpha=-rho*g*pow(h,2)*L/24.;
+                for (int i=0;i<6;i+=2)
+                {
+                    I(i)=0;
+                    I(i+1)=1;
+                }
+
+                Fe=alpha*I;
+
+
+            }
+            else if (BC="Neumann")
+            {	
+                alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
+            }
+
+            else if (BC="Dirichlet")
+            {
+
+            }
+        }
+    }
+
+    return Fe;
+}
+
 
 
 int main(int argc, char** argv) {
@@ -125,7 +182,7 @@ int main(int argc, char** argv) {
 
     // Exemple : propriétés du matériau
     double E = 15e9; // Module de Young en Pascals
-    double nu = 0.25;  // Coefficient de Poisson
+    double nu = 0.25;  // Coefficient de Poisson3,84 euros bru
     double g=9.81;
     double rho=2000;
 
