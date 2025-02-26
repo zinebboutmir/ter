@@ -103,18 +103,19 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
     return {Ke,Fe};
 }
 
-VectorXd computeFe( const MatrixXd& B)
+VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
 {
     size_t rows=B.rows();
     VectorXd Fe(rows);
     VectorXd I(rows);
-
+    double alpha(0);
+    string BC;
     
-	for (unsigned int i = 0; i < this->_msh->Get_edges().size(); i++)
+	for (unsigned int i = 0; i < _msh->Get_edges().size(); i++)
     {
 
-        int t1=this->_msh->Get_edges()[i].Get_T1();
-		int t2=this->_msh->Get_edges()[i].Get_T2();  
+        int t1=_msh->Get_edges()[i].Get_T1();
+		int t2=_msh->Get_edges()[i].Get_T2();  
 
         if (t2!=-1)     
         {
@@ -130,7 +131,7 @@ VectorXd computeFe( const MatrixXd& B)
             double h=25.;
             double L=1;
             double w=1000;
-
+            BC=_msh->Get_edges()[i].Get_BC();
 
             if (_msh->Get_edges()[i].Get_BC()=="Neumann_homogene")
             {
@@ -145,12 +146,20 @@ VectorXd computeFe( const MatrixXd& B)
 
 
             }
+<<<<<<< HEAD
             else if (_msh->Get_edges()[i].Get_BC()="Neumann")
+=======
+            else if (BC=="Neumann")
+>>>>>>> c80ddd27673ec487d8f72f395d2dbaba061d0a5b
             {	
                 double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
             }
 
+<<<<<<< HEAD
             else if (_msh->Get_edges()[i].Get_BC()="Dirichlet")
+=======
+            else if (BC=="Dirichlet")
+>>>>>>> c80ddd27673ec487d8f72f395d2dbaba061d0a5b
             {
 
             }
