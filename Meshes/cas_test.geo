@@ -24,3 +24,5 @@ Physical Curve("est", 5) = {2};
 Physical Curve("ouest", 6) = {3};
 //+
 Physical Surface("triangle", 100) = {1};
+//+
+Physical Point("encastre", 101) = {1};

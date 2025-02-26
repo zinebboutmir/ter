@@ -306,5 +306,53 @@ void Mesh2D::Read_mesh(string name_mesh)
    cout << "-------------------------------------------------" << endl;
 }
 
+
+void Mesh2D::Build_Bool(){
+
+   int n1,n2;
+   string BC;
+   Bool_Table.resize(_vertices.size(),2);
+   for (int i(0); i<_edges.size();i++){
+      BC= this->_edges[i].Get_BC() ;
+      n1=this-> _edges[i].Get_vertices()(0);
+      n2=this-> _edges[i].Get_vertices()(1);
+
+      if (BC=="diriclet"){
+         Bool_Table.row(n1) << true, false ;
+         Bool_Table.row(n2) << true, false ;
+      }
+      else{
+         Bool_Table.row(n1) << true, true;
+         Bool_Table.row(n2) << true, true ;
+      }
+   }
+
+}
+
+void Mesh2D::Build_Table(){
+      int k(0);
+      vector<bool> Bool;
+      for (int i(0); i<_vertices.size();i++){
+
+         Bool.push_back(Bool_Table(i,0));
+         Bool.push_back(Bool_Table(i,1));
+         if (Bool.front()==true){
+            Table_degre(i,0)=k;
+            k=k+1;
+         }
+         if (Bool.back()==true){
+            Table_degre(i,1)=k;
+            k=k+1;
+         }
+         if(Bool.front()==false){
+            Table_degre(i,0)=-1;
+         }
+         if(Bool.back()==false){
+            Table_degre(i,1)=-1;
+         }   
+         Bool.clear();
+      }
+}
+
 #define _MESH_2D_CPP
 #endif

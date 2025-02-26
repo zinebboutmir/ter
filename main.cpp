@@ -73,11 +73,12 @@ void printMatrix(const vector<vector<double>>& matrix) {
     }
 }
 
-MatrixXd computeKe( const MatrixXd& B,  const MatrixXd& D,  double area, double detJ) 
+pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  double area, double detJ, VectorXi tri, double g ,double rho) 
 {
     size_t rows = B.rows();
     size_t cols = B.cols();
     size_t Dsize = D.rows();
+
 
     // Vérifier que les dimensions sont compatibles
     if (rows != Dsize) {
@@ -94,8 +95,14 @@ MatrixXd computeKe( const MatrixXd& B,  const MatrixXd& D,  double area, double 
 
     Ke= Ke*area*detJ;
 
-    return Ke;
+    VectorXd Fe(6);
+    Fe << 0,1,0,1,0,1;
+
+    Fe=-rho*g*area*Fe/3;
+
+    return {Ke,Fe};
 }
+
 
 
 int main(int argc, char** argv) {
@@ -120,6 +127,7 @@ int main(int argc, char** argv) {
     double E = 15e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
+    double rho=2000;
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
@@ -140,10 +148,15 @@ int main(int argc, char** argv) {
     std::cout << "Matrice D:" << std::endl;
     std::cout << "-------------------------------------" << std::endl;
 
-    //definition de la taille de K
-    MatrixXd K(vertices.size(),vertices.size());
+    //Definition de la table de correspondance
+    MatrixXd Table= mesh->Get_Table_degre();
+    int taille=Table.maxCoeff();
 
-    for (long unsigned int i=0;i<=mesh->Get_triangles().size();++i)
+    //definition de la taille de K et F
+    MatrixXd K(taille,taille);
+    VectorXd F (taille);
+
+    for (long unsigned int i=0;i<mesh->Get_triangles().size();i++)
     {
         Vector3i tri = triangles[i].Get_vertices();
         cout<<tri<<endl;
@@ -167,14 +180,21 @@ int main(int argc, char** argv) {
         std::cout << "Aire du triangle: " << area << std::endl;
         std::cout << "-------------------------------------" << std::endl;
 
-        // computeKe( const MatrixXd& B,  const MatrixXd& D,  double area) 
-
         // Calcul de la matrice de rigidité élémentaire Ke
 
-        MatrixXd Ke = computeKe(B, D, area,detJ);
+        auto res = computeKe_Fe(B, D, area,detJ,tri,g,rho);
+        MatrixXd Ke = res.first;
+        VectorXd Fe = res.second;
 
         //calcul de la matrice de rigidité globale
-        K.block(3*i,3*i,3,3)+=Ke ;
+         for (int k=0; k<3;k++){
+            for (int l=0; l<3; l++){
+                K(2*tri(k),2*tri(l))+= Ke(2*k,2*l);
+                K(2*tri(k)+1,2*tri(l)+1)+= Ke(2*k+1,2*l+1);
+                F(2*tri(k))+= Fe(2*k);
+                F(2*tri(k)+1)+= Fe(2*k+1);
+            }
+         }
 
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
@@ -183,6 +203,7 @@ int main(int argc, char** argv) {
         //nodes= Array32d::Zero();
 
     }
+    cout << F << endl;
 
     delete mesh;
     delete data_file;
