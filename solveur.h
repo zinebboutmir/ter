@@ -7,12 +7,12 @@
 using namespace Eigen;
 using namespace std;
 
-using namespace std;
-using namespace Eigen;
 
 // Fonction de décomposition de Cholesky
 void chol(const Eigen::MatrixXd& A, Eigen::MatrixXd& L);
+// Résol cholesky
 void reschol(MatrixXd& L, const VectorXd& b, VectorXd& x);
+// gradconjug
 void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x,VectorXd& x_0, int Nmax , double eps );
 
 #endif // SOLVEUR_H
