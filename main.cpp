@@ -133,9 +133,9 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
             double w=1000;
             BC=_msh->Get_edges()[i].Get_BC();
 
-            if (BC=="Neumann_homogene")
+            if (_msh->Get_edges()[i].Get_BC()=="Neumann_homogene")
             {
-                alpha=-rho*g*pow(h,2)*L/24.;
+                double alpha=-rho*g*pow(h,2)*L/24.;
                 for (int i=0;i<6;i+=2)
                 {
                     I(i)=0;
@@ -146,12 +146,20 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
 
 
             }
+<<<<<<< HEAD
+            else if (_msh->Get_edges()[i].Get_BC()="Neumann")
+=======
             else if (BC=="Neumann")
+>>>>>>> c80ddd27673ec487d8f72f395d2dbaba061d0a5b
             {	
-                alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
+                double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
             }
 
+<<<<<<< HEAD
+            else if (_msh->Get_edges()[i].Get_BC()="Dirichlet")
+=======
             else if (BC=="Dirichlet")
+>>>>>>> c80ddd27673ec487d8f72f395d2dbaba061d0a5b
             {
 
             }
