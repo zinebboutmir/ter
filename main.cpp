@@ -146,23 +146,18 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
 
 
             }
-<<<<<<< HEAD
-            else if (_msh->Get_edges()[i].Get_BC()="Neumann")
-=======
             else if (BC=="Neumann")
->>>>>>> c80ddd27673ec487d8f72f395d2dbaba061d0a5b
+
             {	
                 double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
             }
 
-<<<<<<< HEAD
-            else if (_msh->Get_edges()[i].Get_BC()="Dirichlet")
-=======
-            else if (BC=="Dirichlet")
->>>>>>> c80ddd27673ec487d8f72f395d2dbaba061d0a5b
-            {
 
-            }
+            // else if (BC=="Dirichlet")
+
+            // {
+
+            // }
         }
     }
 
