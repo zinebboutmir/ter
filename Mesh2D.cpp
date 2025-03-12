@@ -307,7 +307,7 @@ void Mesh2D::Read_mesh(string name_mesh)
 }
 
 
-void Mesh2D::Build_Bool(){
+Eigen::Matrix<bool, Eigen::Dynamic, 2> Mesh2D::Build_Bool(){
 
    int n1,n2;
    string BC;
@@ -317,7 +317,7 @@ void Mesh2D::Build_Bool(){
       n1=this-> _edges[i].Get_vertices()(0);
       n2=this-> _edges[i].Get_vertices()(1);
 
-      if (BC=="diriclet"){
+      if (BC=="Dirichlet"){
          Bool_Table.row(n1) << true, false ;
          Bool_Table.row(n2) << true, false ;
       }
@@ -326,12 +326,15 @@ void Mesh2D::Build_Bool(){
          Bool_Table.row(n2) << true, true ;
       }
    }
+   return Bool_Table;
 
 }
 
-void Mesh2D::Build_Table(){
+Eigen::MatrixXi Mesh2D::Build_Table(){
       int k(0);
       vector<bool> Bool;
+      Build_Bool();
+      Table_degre.resize(_vertices.size(),2);
       for (int i(0); i<_vertices.size();i++){
 
          Bool.push_back(Bool_Table(i,0));
@@ -352,6 +355,7 @@ void Mesh2D::Build_Table(){
          }   
          Bool.clear();
       }
+      return Table_degre;
 }
 
 #define _MESH_2D_CPP

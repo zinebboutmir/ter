@@ -133,9 +133,9 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
             double w=1000;
             BC=_msh->Get_edges()[i].Get_BC();
 
-            if (BC=="Neumann_homogene")
+            if (_msh->Get_edges()[i].Get_BC()=="Neumann_homogene")
             {
-                alpha=-rho*g*pow(h,2)*L/24.;
+                double alpha=-rho*g*pow(h,2)*L/24.;
                 for (int i=0;i<6;i+=2)
                 {
                     I(i)=0;
@@ -147,14 +147,17 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
 
             }
             else if (BC=="Neumann")
+
             {	
-                alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
+                double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
             }
 
-            else if (BC=="Dirichlet")
-            {
 
-            }
+            // else if (BC=="Dirichlet")
+
+            // {
+
+            // }
         }
     }
 
@@ -207,17 +210,22 @@ int main(int argc, char** argv) {
     std::cout << "-------------------------------------" << std::endl;
 
     //Definition de la table de correspondance
-    MatrixXd Table= mesh->Get_Table_degre();
+    mesh->Build_Bool();
+    mesh->Build_Table();
+    MatrixXi Table= mesh->Get_Table_degre();
+        cout <<"help"<< endl;
+    cout << Table << endl;
     int taille=Table.maxCoeff();
-
+        cout <<"help"<< endl;
     //definition de la taille de K et F
     MatrixXd K(taille,taille);
     VectorXd F (taille);
+    VectorXi Table_correspondance_locale(6);
 
     for (long unsigned int i=0;i<mesh->Get_triangles().size();i++)
     {
         Vector3i tri = triangles[i].Get_vertices();
-        cout<<tri<<endl;
+        cout <<tri<<endl;
         table_corresp.row(i) =tri;
 
 
@@ -227,6 +235,7 @@ int main(int argc, char** argv) {
         nodes(1,0) = vertices[i].Get_coor()(0), nodes(1,1)=vertices[i].Get_coor()(1);
         nodes(2,0) = vertices[i].Get_coor()(0), nodes(2,1)=vertices[i].Get_coor()(1);
         // Calcul de la matrice B et de l'aire
+        cout << "i" << endl;
         auto results =computeB(nodes,N);
         MatrixXd B =  results.first;
         double detJ= results.second;
@@ -244,13 +253,18 @@ int main(int argc, char** argv) {
         MatrixXd Ke = res.first;
         VectorXd Fe = res.second;
 
+        //construction table de correspondance locale
+
+        Table_correspondance_locale <<Table(tri[0],0),Table(tri[0],1),Table(tri[1],0),Table(tri[1],1),Table(tri[2],0),Table(tri[2],1);
+
         //calcul de la matrice de rigidité globale
          for (int k=0; k<3;k++){
             for (int l=0; l<3; l++){
-                K(2*tri(k),2*tri(l))+= Ke(2*k,2*l);
-                K(2*tri(k)+1,2*tri(l)+1)+= Ke(2*k+1,2*l+1);
-                F(2*tri(k))+= Fe(2*k);
-                F(2*tri(k)+1)+= Fe(2*k+1);
+
+                if (Table_correspondance_locale(k) && Table_correspondance_locale(l) != -1){
+                    K(Table_correspondance_locale[k],Table_correspondance_locale(l))+= Ke(k,l);
+                    F(Table_correspondance_locale(k))+= Fe(k);
+                }
             }
          }
 

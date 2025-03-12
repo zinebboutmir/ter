@@ -82,15 +82,15 @@ private:
    // vecteur de type
    const std::vector<std::string> _BC_type;
    Eigen::Matrix<bool,Eigen::Dynamic,2> Bool_Table;
-   Eigen::MatrixXd Table_degre;
+   Eigen::MatrixXi Table_degre;
 
 public:
    Mesh2D(const std::vector<int> & BC_ref, const std::vector<std::string> & BC_type);
    void Read_mesh(std::string name_mesh);
    void Build_triangles_center_and_area();
    void Build_edges_normal_length_and_center();
-   void Build_Bool();
-   void Build_Table();
+   Eigen::Matrix<bool, Eigen::Dynamic, 2> Build_Bool();
+   Eigen::MatrixXi Build_Table();
 
    const std::vector<Vertex> & Get_vertices() const {return _vertices;};
 
@@ -105,7 +105,7 @@ public:
    const Eigen::Matrix<double, Eigen::Dynamic, 2> & Get_edges_center() const {return _edg_center;};
    const std::vector<Eigen::Matrix<double, Eigen::Dynamic, 2> > & Get_edges_coord() const {return _edg_coord;};
    const Eigen::Matrix<bool, Eigen::Dynamic, 2> & Get_Bool_table() const {return Bool_Table;};
-   const Eigen::MatrixXd & Get_Table_degre() const {return Table_degre;};
+   const Eigen::MatrixXi & Get_Table_degre() const {return Table_degre;};
 protected:
    void Add_single_edge(const Edge& edge, int ne, std::vector<int>& head_minv,
       std::vector<int>& next_edge, int& nb_edges);
