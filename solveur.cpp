@@ -100,9 +100,7 @@ void reschol(MatrixXd& L, const VectorXd& b, VectorXd& x) {
 
 
 void gradientConjugue(const MatrixXd& A, const VectorXd& b, VectorXd& x, const VectorXd& x_0, int Nmax, double eps) {
-    int n = b.size();
-
-
+    //int n = b.size();
     // Initialisation
     x = x_0;                  
     VectorXd r = b - A * x_0; 
