@@ -146,13 +146,18 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
 
                 Fe=alpha*I;
 
-
             }
+
+  
             else if (BC=="Neumann")
 
             {	
                 double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
             }
+
+
+            else if (BC=="Dirichlet")
+            {
 
 
             // else if (BC=="Dirichlet")
@@ -162,7 +167,7 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
             // }
         }
     }
-
+    }
     return Fe;
 }
 
