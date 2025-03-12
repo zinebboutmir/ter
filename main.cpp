@@ -146,13 +146,18 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
 
                 Fe=alpha*I;
 
-
             }
+
+  
             else if (BC=="Neumann")
 
             {	
                 double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
             }
+
+
+            else if (BC=="Dirichlet")
+            {
 
 
             // else if (BC=="Dirichlet")
@@ -162,7 +167,7 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
             // }
         }
     }
-
+    }
     return Fe;
 }
 
@@ -220,10 +225,11 @@ int main(int argc, char** argv) {
 
     cout << Table << endl;
     int taille=Table.maxCoeff();
+    cout << "taille: "<< taille << endl;
 
     //definition de la taille de K et F
-    MatrixXd K(taille,taille);
-    VectorXd F (taille);
+    MatrixXd K(taille+1,taille+1);
+    VectorXd F (taille+1);
     VectorXi Table_correspondance_locale(6);
 
     Vector3i tri;
@@ -268,7 +274,7 @@ int main(int argc, char** argv) {
          for (int k=0; k<3;k++){
             for (int l=0; l<3; l++){
 
-                if (Table_correspondance_locale(k) && Table_correspondance_locale(l) != -1){
+                if (Table_correspondance_locale(k) !=-1 && Table_correspondance_locale(l) != -1){
                     K(Table_correspondance_locale[k],Table_correspondance_locale(l))+= Ke(k,l);
                     F(Table_correspondance_locale(k))+= Fe(k);
                 }
@@ -283,6 +289,8 @@ int main(int argc, char** argv) {
 
     }
     cout << F << endl;
+    cout<< "K: " << K<< endl;
+    cout << "taille de K: " << K.size() << endl;
 
     delete mesh;
     delete data_file;
