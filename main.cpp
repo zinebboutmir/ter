@@ -10,6 +10,7 @@
 using namespace std;
 using namespace Eigen;
 
+
 // g++ -std=c++11 -o run main.cpp
 
 
@@ -44,6 +45,7 @@ pair <MatrixXd,double> computeB(MatrixXd& nodes, MatrixXd& N) {
 
     MatrixXd J= N*nodes;
     double detJ= J(0,0)*J(1,1)-J(0,1)*J(1,0);
+    cout << J << endl;
 
     //construction de T
     MatrixXd J_1= J.inverse();
@@ -192,6 +194,8 @@ int main(int argc, char** argv) {
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
+    mesh-> Build_triangles_center_and_area();
+    mesh-> Build_edges_normal_length_and_center();
 
     const vector<Triangle>& triangles = mesh->Get_triangles();
     const vector<Vertex>& vertices =mesh->Get_vertices();
@@ -213,35 +217,38 @@ int main(int argc, char** argv) {
     mesh->Build_Bool();
     mesh->Build_Table();
     MatrixXi Table= mesh->Get_Table_degre();
-        cout <<"help"<< endl;
+
     cout << Table << endl;
     int taille=Table.maxCoeff();
-        cout <<"help"<< endl;
+
     //definition de la taille de K et F
     MatrixXd K(taille,taille);
     VectorXd F (taille);
     VectorXi Table_correspondance_locale(6);
 
+    Vector3i tri;
+
     for (long unsigned int i=0;i<mesh->Get_triangles().size();i++)
     {
-        Vector3i tri = triangles[i].Get_vertices();
+        tri = triangles[i].Get_vertices();
         cout <<tri<<endl;
         table_corresp.row(i) =tri;
 
-
         //coordonnées réel des noeuds 
 
-        nodes(0,0) = vertices[i].Get_coor()(0), nodes(0,1)=vertices[i].Get_coor()(1);
-        nodes(1,0) = vertices[i].Get_coor()(0), nodes(1,1)=vertices[i].Get_coor()(1);
-        nodes(2,0) = vertices[i].Get_coor()(0), nodes(2,1)=vertices[i].Get_coor()(1);
+        nodes(0,0) = vertices[tri(0)].Get_coor()(0), nodes(0,1)=vertices[tri(0)].Get_coor()(1);
+        nodes(1,0) = vertices[tri(1)].Get_coor()(0), nodes(1,1)=vertices[tri(1)].Get_coor()(1);
+        nodes(2,0) = vertices[tri(2)].Get_coor()(0), nodes(2,1)=vertices[tri(2)].Get_coor()(1);
+
+        cout <<"Nodes :"<< nodes << endl;
         // Calcul de la matrice B et de l'aire
-        cout << "i" << endl;
         auto results =computeB(nodes,N);
         MatrixXd B =  results.first;
         double detJ= results.second;
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice B:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
+        cout << B << endl;
 
         double area=mesh->Get_triangles_area()(i);
         std::cout << "Aire du triangle: " << area << std::endl;
