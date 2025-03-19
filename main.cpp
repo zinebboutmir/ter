@@ -105,51 +105,82 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
     return {Ke,Fe};
 }
 
-VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh,const vector<Edge>& arete_bord)
+
+double pression(double x,double rho, double g){
+    return rho*g*(50-x);
+}
+
+VectorXd T(VectorXd S1,VectorXd S2, double eta){
+    return (1-eta)*S1 -eta*S2;
+}
+
+VectorXd Fct_Forme(double eta){
+    VectorXd Forme (4);
+    Forme.setZero();
+    Forme(0)= 1-eta; Forme(1) =1-eta; Forme(2) =eta ; Forme(3)=eta;
+    return Forme;
+}
+
+double Quadrature(double (*f)(double (*pression)(double,double,double),VectorXd (*T)(VectorXd S1,VectorXd S2, double), VectorXd (*Fct_Forme)(double ), double eta, VectorXd S1,VectorXd S2, int i),VectorXd S_1,VectorXd S_2,int i){
+    double w1(.5),w2(0.5);
+    double x1(0.5-1/(2*sqrt(3))),x2(0.5+1/(2*sqrt(3)));
+    return w1*f(pression,T,Fct_Forme,x1,S_1,S_2,i)+w2*f(pression,T,Fct_Forme,x2,S_1,S_2,i);
+}
+
+double f(double (*pression)(double,double,double),VectorXd (*T)(VectorXd S1,VectorXd S2, double), VectorXd (*Fct_Forme)(double ), double eta, VectorXd S1,VectorXd S2, int i){
+     double g=9.81;
+    double rho=2000.;
+    return pression(T(S1,S2,eta)(1),rho,g)*Fct_Forme(eta)[i];
+
+}
+
+VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixXi Table,const vector<Vertex>& vertices,int taille)
 {
-    size_t rows=B.rows();
+    int rows=6;
     VectorXd Fe(rows);
-    VectorXd I(rows);
-    double alpha(0);
+    VectorXd F_surf(taille+1);
+    //double alpha(0);
     string BC;
+    int sommet1,sommet2,ddl1,ddl2,ddl3,ddl4;
+    Vector4i tab;
+    
+    double g=9.81;
+    double rho=2000.;
+    double mu=0.25;
+    double h=50.;
+    double L=1;
+    double w=1000;
+
+    VectorXd coor1,coor2;
+    Fe.setZero();
+    F_surf.setZero();
     
 	for (unsigned int i = 0; i < arete_bord.size(); i++)
     {
 
-        double g=9.81;
-        double rho=2000.;
-        double mu=0.25;
-        double h=25.;
-        double L=1;
-        double w=1000;
-        BC=_msh->Get_edges()[i].Get_BC();
+        BC=arete_bord[i].Get_BC();
 
-        if (BC=="Neumann_homogene")
+        if (BC=="Neumann")
         {
-            double alpha=-rho*g*pow(h,2)*L/24.;
-            for (int i=0;i<6;i+=2)
-            {
-                I(i)=0;
-                I(i+1)=1;
+            sommet1= arete_bord[i].Get_vertices()(0);
+            sommet2= arete_bord[i].Get_vertices()(1);
+            ddl1=Table(sommet1,0) ; ddl2= Table(sommet1,1); ddl3=Table(sommet2,0);ddl4=Table(sommet2,1);
+            tab<< ddl1,ddl2,ddl3,ddl4;
+            coor1=vertices[sommet1].Get_coor();
+            coor2=vertices[sommet2].Get_coor();
+
+        //     //double alpha=-rho*g*pow(h,2)*L/24.;
+            for (int k=0;k<4;k++){
+                Fe(k)+=-Quadrature(f,coor1,coor2,k) ;
             }
-
-            Fe=alpha*I;
-
+            for (int k(0); k<4;k++){
+                F_surf(tab(k))+=Fe(k);
+            }
         }
-
-
-        else if (BC=="Neumann")
-
-        {	
-            double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
-        }
-
-
     
     }
-    return Fe;
+    return F_surf;
 }
-
 
 
 int main(int argc, char** argv) {
@@ -165,7 +196,6 @@ int main(int argc, char** argv) {
 
    // ----------------------- Fichier de données --------------------------------
    DataFile* data_file = new DataFile(data_file_name);
-
 
 
     Mesh2D* mesh = new Mesh2D(data_file->Get_BC_ref(),data_file->Get_BC_type());
@@ -267,12 +297,20 @@ int main(int argc, char** argv) {
         std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
         //printMatrix(Ke);
+        //cout << "ke :" << Ke<< endl;
 
 
     }
-    cout << F << endl;
+    
     cout<< "K: " << K<< endl;
     cout << "taille de K: " << K.size() << endl;
+    F= F+computeFe_F_surf( mesh,arete_bord, Table, vertices, taille);
+
+    cout << "F: " << F<< endl;
+
+    VectorXd q= K.lu().solve(F) ;
+
+    cout << "q: " << q <<endl;
 
     delete mesh;
     delete data_file;
