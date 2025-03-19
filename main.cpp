@@ -105,7 +105,7 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
     return {Ke,Fe};
 }
 
-VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
+VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh,const vector<Edge>& arete_bord)
 {
     size_t rows=B.rows();
     VectorXd Fe(rows);
@@ -113,60 +113,39 @@ VectorXd computeFe( const MatrixXd& B, Mesh2D* _msh)
     double alpha(0);
     string BC;
     
-	for (unsigned int i = 0; i < _msh->Get_edges().size(); i++)
+	for (unsigned int i = 0; i < arete_bord.size(); i++)
     {
 
-        int t1=_msh->Get_edges()[i].Get_T1();
-		int t2=_msh->Get_edges()[i].Get_T2();  
+        double g=9.81;
+        double rho=2000.;
+        double mu=0.25;
+        double h=25.;
+        double L=1;
+        double w=1000;
+        BC=_msh->Get_edges()[i].Get_BC();
 
-        if (t2!=-1)     
+        if (BC=="Neumann_homogene")
         {
-            Fe(i)=0;
-        }
-
-        else
-        {   
-
-            double g=9.81;
-            double rho=2000.;
-            double mu=0.25;
-            double h=25.;
-            double L=1;
-            double w=1000;
-            BC=_msh->Get_edges()[i].Get_BC();
-
-            if (_msh->Get_edges()[i].Get_BC()=="Neumann_homogene")
+            double alpha=-rho*g*pow(h,2)*L/24.;
+            for (int i=0;i<6;i+=2)
             {
-                double alpha=-rho*g*pow(h,2)*L/24.;
-                for (int i=0;i<6;i+=2)
-                {
-                    I(i)=0;
-                    I(i+1)=1;
-                }
-
-                Fe=alpha*I;
-
+                I(i)=0;
+                I(i+1)=1;
             }
 
-  
-            else if (BC=="Neumann")
+            Fe=alpha*I;
 
-            {	
-                double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
-            }
-
-
-            else if (BC=="Dirichlet")
-            {
-
-
-            // else if (BC=="Dirichlet")
-
-            // {
-
-            // }
         }
-    }
+
+
+        else if (BC=="Neumann")
+
+        {	
+            double alpha=-rho*g*pow(h,2)*L/24.+w*g*pow(h,2)*L;
+        }
+
+
+    
     }
     return Fe;
 }
@@ -204,6 +183,7 @@ int main(int argc, char** argv) {
 
     const vector<Triangle>& triangles = mesh->Get_triangles();
     const vector<Vertex>& vertices =mesh->Get_vertices();
+    const vector<Edge>& arete_bord = mesh->Get_edges_bord();
     MatrixXi table_corresp (mesh->Get_triangles().size(),3);
     MatrixXd N(2,3);
     N << -1, 1,0,
@@ -231,6 +211,8 @@ int main(int argc, char** argv) {
     MatrixXd K(taille+1,taille+1);
     VectorXd F (taille+1);
     VectorXi Table_correspondance_locale(6);
+    K.setZero();
+    F.setZero();
 
     Vector3i tri;
 
@@ -269,13 +251,13 @@ int main(int argc, char** argv) {
         //construction table de correspondance locale
 
         Table_correspondance_locale <<Table(tri[0],0),Table(tri[0],1),Table(tri[1],0),Table(tri[1],1),Table(tri[2],0),Table(tri[2],1);
-
+        cout << "Table locale"<< Table_correspondance_locale << endl;
         //calcul de la matrice de rigidité globale
-         for (int k=0; k<3;k++){
-            for (int l=0; l<3; l++){
+         for (int k=0; k<6;k++){
+            for (int l=0; l<6; l++){
 
-                if (Table_correspondance_locale(k) !=-1 && Table_correspondance_locale(l) != -1){
-                    K(Table_correspondance_locale[k],Table_correspondance_locale(l))+= Ke(k,l);
+                if ((Table_correspondance_locale(k) !=-1) && (Table_correspondance_locale(l) != -1)){
+                    K(Table_correspondance_locale[k],Table_correspondance_locale[l])+= Ke(k,l);
                     F(Table_correspondance_locale(k))+= Fe(k);
                 }
             }
@@ -285,7 +267,7 @@ int main(int argc, char** argv) {
         std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
         //printMatrix(Ke);
-        //nodes= Array32d::Zero();
+
 
     }
     cout << F << endl;
