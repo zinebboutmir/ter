@@ -153,6 +153,7 @@ void Mesh2D::Build_edges_normal_length_and_center()
 void Mesh2D::Build_edges_bord(){
 
    string BC;
+
    for (int i(0); i<_edges.size();i++){
       BC= this->_edges[i].Get_BC() ;
       if (BC != "none"){

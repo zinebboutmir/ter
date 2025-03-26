@@ -107,11 +107,11 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
 
 
 double pression(double x,double rho, double g){
-    return rho*g*(50-x);
+    return rho*g*(50-x)+10000;
 }
 
 VectorXd T(VectorXd S1,VectorXd S2, double eta){
-    return (1-eta)*S1 -eta*S2;
+    return (1-eta)*S1 +eta*S2;
 }
 
 VectorXd Fct_Forme(double eta){
@@ -128,8 +128,8 @@ double Quadrature(double (*f)(double (*pression)(double,double,double),VectorXd 
 }
 
 double f(double (*pression)(double,double,double),VectorXd (*T)(VectorXd S1,VectorXd S2, double), VectorXd (*Fct_Forme)(double ), double eta, VectorXd S1,VectorXd S2, int i){
-     double g=9.81;
-    double rho=2000.;
+    double g=9.81;
+    double rho=1000.;
     return pression(T(S1,S2,eta)(1),rho,g)*Fct_Forme(eta)[i];
 
 }
@@ -143,42 +143,59 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
     string BC;
     int sommet1,sommet2,ddl1,ddl2,ddl3,ddl4;
     Vector4i tab;
+    double x_norm,y_norm;
+    Vector4d xy;
+    int ref_bord;
+    Eigen::Matrix<double, Eigen::Dynamic, 2> _edg_normal=_msh->Get_edges_normal();
     
     double g=9.81;
-    double rho=2000.;
-    double mu=0.25;
+    double rho=2300.;
     double h=50.;
     double L=1;
     double w=1000;
 
-    VectorXd coor1,coor2;
+    VectorXd coor1,coor2,norm(2);
     Fe.setZero();
     F_surf.setZero();
+
     
 	for (unsigned int i = 0; i < arete_bord.size(); i++)
     {
 
         BC=arete_bord[i].Get_BC();
-
+        sommet1= arete_bord[i].Get_vertices()(0);
+        sommet2= arete_bord[i].Get_vertices()(1);
+        cout << "sommet aret"<<sommet1<< " "<<sommet2<< endl;
         if (BC=="Neumann")
         {
+            cout << BC <<endl;
             sommet1= arete_bord[i].Get_vertices()(0);
             sommet2= arete_bord[i].Get_vertices()(1);
+            cout << "sommet aret"<<sommet1<< " "<<sommet2<< endl;
             ddl1=Table(sommet1,0) ; ddl2= Table(sommet1,1); ddl3=Table(sommet2,0);ddl4=Table(sommet2,1);
             tab<< ddl1,ddl2,ddl3,ddl4;
             coor1=vertices[sommet1].Get_coor();
             coor2=vertices[sommet2].Get_coor();
+            norm=_edg_normal.row(i);
+            x_norm=norm(0);
+            y_norm=norm(1);
+            xy<<x_norm,y_norm,x_norm,y_norm;
 
         //     //double alpha=-rho*g*pow(h,2)*L/24.;
             for (int k=0;k<4;k++){
-                Fe(k)+=-Quadrature(f,coor1,coor2,k) ;
+                Fe(k)+=-Quadrature(f,coor1,coor2,k)*xy(k) ;
             }
-            for (int k(0); k<4;k++){
-                F_surf(tab(k))+=Fe(k);
+            for (int k(0); k<4;k++)
+            {
+                if (tab(k)!=-1)
+                {
+                    F_surf(tab(k))+=Fe(k);
+                }
             }
         }
     
     }
+    cout<<"F_surf="<<F_surf<<endl;
     return F_surf;
 }
 
@@ -204,16 +221,17 @@ int main(int argc, char** argv) {
     double E = 15e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson3,84 euros bru
     double g=9.81;
-    double rho=2000;
+    double rho=2300;
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
     mesh-> Build_triangles_center_and_area();
     mesh-> Build_edges_normal_length_and_center();
+    mesh-> Build_edges_bord();
 
     const vector<Triangle>& triangles = mesh->Get_triangles();
     const vector<Vertex>& vertices =mesh->Get_vertices();
-    const vector<Edge>& arete_bord = mesh->Get_edges_bord();
+    const vector<Edge>& arete = mesh->Get_edges();
     MatrixXi table_corresp (mesh->Get_triangles().size(),3);
     MatrixXd N(2,3);
     N << -1, 1,0,
@@ -304,7 +322,7 @@ int main(int argc, char** argv) {
     
     cout<< "K: " << K<< endl;
     cout << "taille de K: " << K.size() << endl;
-    F= F+computeFe_F_surf( mesh,arete_bord, Table, vertices, taille);
+    F= F+computeFe_F_surf( mesh,arete, Table, vertices, taille);
 
     cout << "F: " << F<< endl;
 
