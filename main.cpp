@@ -45,7 +45,7 @@ pair <MatrixXd,double> computeB(MatrixXd& nodes, MatrixXd& N) {
 
     MatrixXd J= N*nodes;
     double detJ= J(0,0)*J(1,1)-J(0,1)*J(1,0);
-    cout << J << endl;
+    //cout << detJ << endl;
 
     //construction de T
     MatrixXd J_1= J.inverse();
@@ -93,38 +93,41 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
 
     // Calcul de BtD * B
     MatrixXd Ke(cols,rows );
-    Ke = BtD*B;
-
-    Ke= Ke*area*detJ;
-
+    Ke =2* BtD*B *detJ;
+    
     VectorXd Fe(6);
+    Fe.setZero();
     Fe << 0,1,0,1,0,1;
 
-    Fe=-rho*g*area*Fe/3;
+    Fe=-rho*g*Fe*50*50/24;
+    //cout << rho*g*50*50/24<< endl;
+    //Fe=-rho*g*area*Fe/3;
 
     return {Ke,Fe};
 }
 
 
 double pression(double x,double rho, double g){
-    return rho*g*(50-x)+10000;
+    return rho*g*(50-x)+10132;
 }
 
 VectorXd T(VectorXd S1,VectorXd S2, double eta){
-    return (1-eta)*S1 +eta*S2;
+    return (1-eta)*S1/2. +(1+eta)*S2/2.;
 }
 
 VectorXd Fct_Forme(double eta){
     VectorXd Forme (4);
     Forme.setZero();
-    Forme(0)= 1-eta; Forme(1) =1-eta; Forme(2) =eta ; Forme(3)=eta;
+    Forme(0)= (1-eta)/2; Forme(1) =(1-eta)/2; Forme(2) =(1+eta)/2 ; Forme(3)=(1+eta)/2;
     return Forme;
 }
 
 double Quadrature(double (*f)(double (*pression)(double,double,double),VectorXd (*T)(VectorXd S1,VectorXd S2, double), VectorXd (*Fct_Forme)(double ), double eta, VectorXd S1,VectorXd S2, int i),VectorXd S_1,VectorXd S_2,int i){
-    double w1(.5),w2(0.5);
-    double x1(0.5-1/(2*sqrt(3))),x2(0.5+1/(2*sqrt(3)));
+    double w1(1),w2(1);
+    double x1(-1/(sqrt(3))),x2(1/(sqrt(3)));
     return w1*f(pression,T,Fct_Forme,x1,S_1,S_2,i)+w2*f(pression,T,Fct_Forme,x2,S_1,S_2,i);
+    // double w(2), x(0);
+    // return w*f(pression,T,Fct_Forme,x,S_1,S_2,i);
 }
 
 double f(double (*pression)(double,double,double),VectorXd (*T)(VectorXd S1,VectorXd S2, double), VectorXd (*Fct_Forme)(double ), double eta, VectorXd S1,VectorXd S2, int i){
@@ -139,21 +142,16 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
     int rows=6;
     VectorXd Fe(rows);
     VectorXd F_surf(taille+1);
-    //double alpha(0);
+
     string BC;
     int sommet1,sommet2,ddl1,ddl2,ddl3,ddl4;
     Vector4i tab;
-    double x_norm,y_norm;
+    double x_norm,y_norm,longueur;
     Vector4d xy;
-    int ref_bord;
-    Eigen::Matrix<double, Eigen::Dynamic, 2> _edg_normal=_msh->Get_edges_normal();
-    
-    double g=9.81;
-    double rho=2300.;
-    double h=50.;
-    double L=1;
-    double w=1000;
 
+    Eigen::Matrix<double, Eigen::Dynamic, 2> _edg_normal=_msh->Get_edges_normal();
+    Eigen::VectorXd length = _msh->Get_edges_length();
+    
     VectorXd coor1,coor2,norm(2);
     Fe.setZero();
     F_surf.setZero();
@@ -163,15 +161,12 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
     {
 
         BC=arete_bord[i].Get_BC();
-        sommet1= arete_bord[i].Get_vertices()(0);
-        sommet2= arete_bord[i].Get_vertices()(1);
-        cout << "sommet aret"<<sommet1<< " "<<sommet2<< endl;
         if (BC=="Neumann")
         {
-            cout << BC <<endl;
+
             sommet1= arete_bord[i].Get_vertices()(0);
             sommet2= arete_bord[i].Get_vertices()(1);
-            cout << "sommet aret"<<sommet1<< " "<<sommet2<< endl;
+            longueur= length[i];
             ddl1=Table(sommet1,0) ; ddl2= Table(sommet1,1); ddl3=Table(sommet2,0);ddl4=Table(sommet2,1);
             tab<< ddl1,ddl2,ddl3,ddl4;
             coor1=vertices[sommet1].Get_coor();
@@ -183,7 +178,8 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
 
         //     //double alpha=-rho*g*pow(h,2)*L/24.;
             for (int k=0;k<4;k++){
-                Fe(k)+=-Quadrature(f,coor1,coor2,k)*xy(k) ;
+                Fe(k)+= -Quadrature(f,coor1,coor2,k)*xy(k)*longueur/2.;
+
             }
             for (int k(0); k<4;k++)
             {
@@ -193,9 +189,11 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
                 }
             }
         }
+        //cout << "Fe surf: " << Fe << endl;
+        //cout << "facteur : " << 1000*9.81*50*50/24 << endl;
+        Fe.setZero();
     
     }
-    cout<<"F_surf="<<F_surf<<endl;
     return F_surf;
 }
 
@@ -219,9 +217,9 @@ int main(int argc, char** argv) {
 
     // Exemple : propriétés du matériau
     double E = 15e9; // Module de Young en Pascals
-    double nu = 0.25;  // Coefficient de Poisson3,84 euros bru
+    double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
-    double rho=2300;
+    double rho=2200;
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
@@ -251,9 +249,7 @@ int main(int argc, char** argv) {
     mesh->Build_Table();
     MatrixXi Table= mesh->Get_Table_degre();
 
-    cout << Table << endl;
     int taille=Table.maxCoeff();
-    cout << "taille: "<< taille << endl;
 
     //definition de la taille de K et F
     MatrixXd K(taille+1,taille+1);
@@ -267,7 +263,6 @@ int main(int argc, char** argv) {
     for (long unsigned int i=0;i<mesh->Get_triangles().size();i++)
     {
         tri = triangles[i].Get_vertices();
-        cout <<tri<<endl;
         table_corresp.row(i) =tri;
 
         //coordonnées réel des noeuds 
@@ -275,8 +270,8 @@ int main(int argc, char** argv) {
         nodes(0,0) = vertices[tri(0)].Get_coor()(0), nodes(0,1)=vertices[tri(0)].Get_coor()(1);
         nodes(1,0) = vertices[tri(1)].Get_coor()(0), nodes(1,1)=vertices[tri(1)].Get_coor()(1);
         nodes(2,0) = vertices[tri(2)].Get_coor()(0), nodes(2,1)=vertices[tri(2)].Get_coor()(1);
+        cout << "nodes: " << nodes <<endl;
 
-        cout <<"Nodes :"<< nodes << endl;
         // Calcul de la matrice B et de l'aire
         auto results =computeB(nodes,N);
         MatrixXd B =  results.first;
@@ -295,27 +290,35 @@ int main(int argc, char** argv) {
         auto res = computeKe_Fe(B, D, area,detJ,tri,g,rho);
         MatrixXd Ke = res.first;
         VectorXd Fe = res.second;
+        cout << "Fe; " << Fe << endl;
 
         //construction table de correspondance locale
 
         Table_correspondance_locale <<Table(tri[0],0),Table(tri[0],1),Table(tri[1],0),Table(tri[1],1),Table(tri[2],0),Table(tri[2],1);
-        cout << "Table locale"<< Table_correspondance_locale << endl;
+        cout << "table de corr : " << Table_correspondance_locale << endl;
         //calcul de la matrice de rigidité globale
          for (int k=0; k<6;k++){
             for (int l=0; l<6; l++){
 
                 if ((Table_correspondance_locale(k) !=-1) && (Table_correspondance_locale(l) != -1)){
                     K(Table_correspondance_locale[k],Table_correspondance_locale[l])+= Ke(k,l);
-                    F(Table_correspondance_locale(k))+= Fe(k);
                 }
             }
          }
 
+         for (int k(0); k<6; k++){
+            if (Table_correspondance_locale(k) != -1){
+                F(Table_correspondance_locale[k])+= Fe(k);
+                //cout << "F table : "<<F(Table_correspondance_locale[k])<<endl;
+            }
+         }
+
+        Ke.setZero();
+        Fe.setZero();
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
         //printMatrix(Ke);
-        //cout << "ke :" << Ke<< endl;
 
 
     }
@@ -325,8 +328,10 @@ int main(int argc, char** argv) {
     F= F+computeFe_F_surf( mesh,arete, Table, vertices, taille);
 
     cout << "F: " << F<< endl;
+    cout << "Table de corr :" << Table << endl;
 
-    VectorXd q= K.lu().solve(F) ;
+    LLT<MatrixXd> cholesky(K);
+    VectorXd q= cholesky.solve(F) ;
 
     cout << "q: " << q <<endl;
 

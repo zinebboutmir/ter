@@ -367,7 +367,6 @@ Eigen::MatrixXi Mesh2D::Build_Table(){
          Bool(0)=(Bool_Table(i,0));
          Bool(1)=(Bool_Table(i,1));
          if (Bool(0)==1){
-            cout << Bool(1)<<endl;
             Table_degre(i,0)=k;
             k=k+1;
          }
