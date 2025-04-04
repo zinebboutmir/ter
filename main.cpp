@@ -39,7 +39,7 @@ MatrixXd computeD(double E, double nu) {
 }
 
 // Fonction pour calculer la matrice B et l'aire d'un élément triangulaire
-pair <MatrixXd,double> computeB(MatrixXd& nodes, MatrixXd& N) {
+pair <MatrixXd,double> computeB(MatrixXd nodes, MatrixXd N) {
 
     //calcul de J
 
@@ -75,7 +75,7 @@ void printMatrix(const vector<vector<double>>& matrix) {
     }
 }
 
-pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  double area, double detJ, VectorXi tri, double g ,double rho) 
+pair <MatrixXd,VectorXd> computeKe_Fe( MatrixXd B,  MatrixXd D,  double area, double detJ, VectorXi tri, double g ,double rho) 
 {
     size_t rows = B.rows();
     size_t cols = B.cols();
@@ -87,13 +87,9 @@ pair <MatrixXd,VectorXd> computeKe_Fe( const MatrixXd& B,  const MatrixXd& D,  d
         throw runtime_error("Dimension mismatch between B and D matrices.");
     }
 
-    // Calcul de Bt * D
-    MatrixXd BtD(cols, Dsize);
-    BtD = B.transpose()*D;
-
     // Calcul de BtD * B
-    MatrixXd Ke(cols,rows );
-    Ke =2* BtD*B *detJ;
+    MatrixXd Ke(cols,cols );
+    Ke =B.transpose()*D*B*detJ/2;
     
     VectorXd Fe(6);
     Fe.setZero();
@@ -252,11 +248,13 @@ int main(int argc, char** argv) {
     int taille=Table.maxCoeff();
 
     //definition de la taille de K et F
-    MatrixXd K(taille+1,taille+1);
-    VectorXd F (taille+1);
+    MatrixXd K(taille+1,taille+1),Ke, B;
+    VectorXd F (taille+1),Fe;
     VectorXi Table_correspondance_locale(6);
     K.setZero();
     F.setZero();
+    Ke.setZero();
+    Fe.setZero();
 
     Vector3i tri;
 
@@ -270,11 +268,11 @@ int main(int argc, char** argv) {
         nodes(0,0) = vertices[tri(0)].Get_coor()(0), nodes(0,1)=vertices[tri(0)].Get_coor()(1);
         nodes(1,0) = vertices[tri(1)].Get_coor()(0), nodes(1,1)=vertices[tri(1)].Get_coor()(1);
         nodes(2,0) = vertices[tri(2)].Get_coor()(0), nodes(2,1)=vertices[tri(2)].Get_coor()(1);
-        cout << "nodes: " << nodes <<endl;
+        //cout << "nodes: " << nodes <<endl;
 
         // Calcul de la matrice B et de l'aire
         auto results =computeB(nodes,N);
-        MatrixXd B =  results.first;
+        B =  results.first;
         double detJ= results.second;
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice B:" << std::endl;
@@ -288,9 +286,12 @@ int main(int argc, char** argv) {
         // Calcul de la matrice de rigidité élémentaire Ke
 
         auto res = computeKe_Fe(B, D, area,detJ,tri,g,rho);
-        MatrixXd Ke = res.first;
-        VectorXd Fe = res.second;
+        Ke.setZero();
+        Fe.setZero();
+        Ke = res.first;
+        Fe = res.second;
         cout << "Fe; " << Fe << endl;
+        cout << "Ke ;" << Ke << endl;
 
         //construction table de correspondance locale
 
@@ -302,6 +303,8 @@ int main(int argc, char** argv) {
 
                 if ((Table_correspondance_locale(k) !=-1) && (Table_correspondance_locale(l) != -1)){
                     K(Table_correspondance_locale[k],Table_correspondance_locale[l])+= Ke(k,l);
+                    //cout << " indice : " << k << " " << l<< endl;
+                    //cout<<"K//////////"<<K<<endl;
                 }
             }
          }
@@ -313,8 +316,6 @@ int main(int argc, char** argv) {
             }
          }
 
-        Ke.setZero();
-        Fe.setZero();
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice de rigidité élémentaire Ke:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
