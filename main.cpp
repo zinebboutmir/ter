@@ -75,7 +75,7 @@ void printMatrix(const vector<vector<double>>& matrix) {
     }
 }
 
-pair <MatrixXd,VectorXd> computeKe_Fe( MatrixXd B,  MatrixXd D,  double area, double detJ, VectorXi tri, double g ,double rho) 
+pair <MatrixXd,VectorXd> computeKe_Fe( MatrixXd B,  MatrixXd D,  double area, double detJ, VectorXi tri, double g ,double rho, double L) 
 {
     size_t rows = B.rows();
     size_t cols = B.cols();
@@ -89,13 +89,13 @@ pair <MatrixXd,VectorXd> computeKe_Fe( MatrixXd B,  MatrixXd D,  double area, do
 
     // Calcul de BtD * B
     MatrixXd Ke(cols,cols );
-    Ke =B.transpose()*D*B*detJ/2;
+    Ke =L*B.transpose()*D*B*detJ/2;
     
     VectorXd Fe(6);
     Fe.setZero();
     Fe << 0,1,0,1,0,1;
 
-    Fe=-rho*g*Fe*50*50/24;
+    Fe=-rho*g*L*Fe*50*50/24;
     //cout << rho*g*50*50/24<< endl;
     //Fe=-rho*g*area*Fe/3;
 
@@ -133,7 +133,7 @@ double f(double (*pression)(double,double,double),VectorXd (*T)(VectorXd S1,Vect
 
 }
 
-VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixXi Table,const vector<Vertex>& vertices,int taille)
+VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixXi Table,const vector<Vertex>& vertices,int taille,double L)
 {
     int rows=6;
     VectorXd Fe(rows);
@@ -190,6 +190,7 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
         Fe.setZero();
     
     }
+    F_surf= F_surf*L;
     return F_surf;
 }
 
@@ -216,6 +217,7 @@ int main(int argc, char** argv) {
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.81;
     double rho=2200;
+    double L=100;
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
@@ -285,7 +287,7 @@ int main(int argc, char** argv) {
 
         // Calcul de la matrice de rigidité élémentaire Ke
 
-        auto res = computeKe_Fe(B, D, area,detJ,tri,g,rho);
+        auto res = computeKe_Fe(B, D, area,detJ,tri,g,rho,L);
         Ke.setZero();
         Fe.setZero();
         Ke = res.first;
@@ -326,7 +328,7 @@ int main(int argc, char** argv) {
     
     cout<< "K: " << K<< endl;
     cout << "taille de K: " << K.size() << endl;
-    F= F+computeFe_F_surf( mesh,arete, Table, vertices, taille);
+    F= F+computeFe_F_surf( mesh,arete, Table, vertices, taille, L);
 
     cout << "F: " << F<< endl;
     cout << "Table de corr :" << Table << endl;
