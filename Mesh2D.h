@@ -77,6 +77,8 @@ private:
    Eigen::Matrix<double, Eigen::Dynamic, 2> _edg_center;
    // coordonnées des arrêtes
    std::vector<Eigen::Matrix<double, Eigen::Dynamic, 2> > _edg_coord;
+   //liste des aretes de bord
+   std::vector<Edge> _edges_bord;
    // vecteur de référence des BC
    const std::vector<int> _BC_ref;
    // vecteur de type
@@ -92,6 +94,7 @@ public:
    void Read_mesh(std::string name_mesh);
    void Build_triangles_center_and_area();
    void Build_edges_normal_length_and_center();
+   void Build_edges_bord();
    Eigen::Matrix<bool, Eigen::Dynamic, 2> Build_Bool();
    Eigen::Matrix<int,Eigen::Dynamic,2> Build_CL();
 
@@ -105,6 +108,7 @@ public:
    const Eigen::VectorXd & Get_triangles_length() const  {return _tri_h;};
 
    const std::vector<Edge> & Get_edges() const {return _edges;};
+   const std::vector<Edge> & Get_edges_bord() const {return _edges_bord;};
    const Eigen::VectorXd & Get_edges_length() const {return _edg_length;};
    const Eigen::Matrix<double, Eigen::Dynamic, 2> & Get_edges_normal() const {return _edg_normal;};
    const Eigen::Matrix<double, Eigen::Dynamic, 2> & Get_edges_center() const {return _edg_center;};

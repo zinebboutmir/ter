@@ -150,6 +150,18 @@ void Mesh2D::Build_edges_normal_length_and_center()
    }
 }
 
+void Mesh2D::Build_edges_bord(){
+
+   string BC;
+
+   for (int i(0); i<_edges.size();i++){
+      BC= this->_edges[i].Get_BC() ;
+      if (BC != "none"){
+         _edges_bord.push_back(_edges[i]);
+      }
+   }
+}
+
 // methode interne qui rajoute une arete
 void Mesh2D::Add_single_edge(const Edge& edge, int ne, vector<int>& head_minv, vector<int>& next_edge, int& nb_edges)
 {
@@ -311,6 +323,7 @@ Eigen::Matrix<bool, Eigen::Dynamic, 2> Mesh2D::Build_Bool(){
 
    int n1,n2;
    string BC;
+   vector<int> arret1,arret2,point;
    Bool_Table.resize(_vertices.size(),2);
 for (int i(0); i< _vertices.size();i++){
       n1=this-> _edges[i].Get_vertices()(0);
@@ -326,12 +339,22 @@ for (int i(0); i< _vertices.size();i++){
       if (BC=="Dirichlet"){
          Bool_Table.row(n1) << true, false ;
          Bool_Table.row(n2) << true, false ;
+         arret1.push_back(n1);
+         arret1.push_back(n2);
+      }
+      if (BC=="Neumann"){
+         arret2.push_back(n1);
+         arret2.push_back(n2);
       }
       else{
          Bool_Table.row(n1) << true, true;
          Bool_Table.row(n2) << true, true ;
       }
    }
+   sort(arret1.begin(),arret1.end());
+   sort(arret2.begin(),arret2.end());
+   set_intersection(arret1.begin(),arret1.end(), arret2.begin(),arret2.end(),back_inserter(point));
+   Bool_Table(point[0],0)=false;
    return Bool_Table;
 
 }
@@ -352,9 +375,15 @@ Eigen::MatrixXi Mesh2D::Build_Table(){
       Table_degre.resize(_vertices.size(),2);
       for (int i(0); i<_vertices.size();i++){
 
+<<<<<<< HEAD
          Bool.push_back(Bool_Table(i,0));
          Bool.push_back(Bool_Table(i,1));
          if (Bool.front()==true){
+=======
+         Bool(0)=(Bool_Table(i,0));
+         Bool(1)=(Bool_Table(i,1));
+         if (Bool(0)==1){
+>>>>>>> 584f48c521c58bc70a53c6ca4a14fffd31d877fb
             Table_degre(i,0)=k;
             k=k+1;
          }
