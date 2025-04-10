@@ -312,7 +312,7 @@ Eigen::Matrix<bool, Eigen::Dynamic, 2> Mesh2D::Build_Bool(){
    int n1,n2;
    string BC;
    Bool_Table.resize(_vertices.size(),2);
-   for (int i(0); i< _vertices.size();i++){
+for (int i(0); i< _vertices.size();i++){
       n1=this-> _edges[i].Get_vertices()(0);
       n2=this-> _edges[i].Get_vertices()(1);
       Bool_Table.row(n1) << true, true;
@@ -324,41 +324,51 @@ Eigen::Matrix<bool, Eigen::Dynamic, 2> Mesh2D::Build_Bool(){
       n2=this-> _edges[i].Get_vertices()(1);
 
       if (BC=="Dirichlet"){
-         
          Bool_Table.row(n1) << true, false ;
          Bool_Table.row(n2) << true, false ;
       }
-
+      else{
+         Bool_Table.row(n1) << true, true;
+         Bool_Table.row(n2) << true, true ;
+      }
    }
    return Bool_Table;
 
 }
 
+
+Eigen::Matrix<int, Eigen::Dynamic, 2> Mesh2D::Build_CL(){
+
+
+
+
+}
+
+
 Eigen::MatrixXi Mesh2D::Build_Table(){
       int k(0);
-      Eigen::Vector2i Bool;
-      Bool_Table=Build_Bool();
+      vector<bool> Bool;
+      Build_Bool();
       Table_degre.resize(_vertices.size(),2);
       for (int i(0); i<_vertices.size();i++){
 
-         Bool(0)=(Bool_Table(i,0));
-         Bool(1)=(Bool_Table(i,1));
-         if (Bool(0)==1){
-            cout << Bool(1)<<endl;
+         Bool.push_back(Bool_Table(i,0));
+         Bool.push_back(Bool_Table(i,1));
+         if (Bool.front()==true){
             Table_degre(i,0)=k;
             k=k+1;
          }
-         if (Bool(1)==1){
+         if (Bool.back()==true){
             Table_degre(i,1)=k;
             k=k+1;
          }
-         if(Bool(0)==0){
+         if(Bool.front()==false){
             Table_degre(i,0)=-1;
          }
-         if(Bool(1)==0){
+         if(Bool.back()==false){
             Table_degre(i,1)=-1;
          }   
-         
+         Bool.clear();
       }
       return Table_degre;
 }
