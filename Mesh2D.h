@@ -85,6 +85,9 @@ private:
    const std::vector<std::string> _BC_type;
    Eigen::Matrix<bool,Eigen::Dynamic,2> Bool_Table;
    Eigen::MatrixXi Table_degre;
+   Eigen::Matrix<int,Eigen::Dynamic,2> CL_Table;
+
+
 
 public:
    Mesh2D(const std::vector<int> & BC_ref, const std::vector<std::string> & BC_type);
@@ -93,6 +96,8 @@ public:
    void Build_edges_normal_length_and_center();
    void Build_edges_bord();
    Eigen::Matrix<bool, Eigen::Dynamic, 2> Build_Bool();
+   Eigen::Matrix<int,Eigen::Dynamic,2> Build_CL();
+
    Eigen::MatrixXi Build_Table();
 
    const std::vector<Vertex> & Get_vertices() const {return _vertices;};
