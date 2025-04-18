@@ -215,8 +215,8 @@ int main(int argc, char** argv) {
     // Exemple : propriétés du matériau
     double E = 15e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson
-    double g=9.81;
-    double rho=2200;
+    double g=9.8;
+    double rho=1800;
     double L=100;
 
     // recuperation du maillage
@@ -252,7 +252,9 @@ int main(int argc, char** argv) {
     //definition de la taille de K et F
     MatrixXd K(taille+1,taille+1),Ke, B;
     VectorXd F (taille+1),Fe;
+    Vector<MatrixXd, Eigen::Dynamic> Liste_B(mesh->Get_triangles().size());
     VectorXi Table_correspondance_locale(6);
+    MatrixXi Table_corr(6,mesh->Get_triangles().size());
     K.setZero();
     F.setZero();
     Ke.setZero();
@@ -260,7 +262,7 @@ int main(int argc, char** argv) {
 
     Vector3i tri;
 
-    for (long unsigned int i=0;i<mesh->Get_triangles().size();i++)
+    for (int i=0;i<mesh->Get_triangles().size();i++)
     {
         tri = triangles[i].Get_vertices();
         table_corresp.row(i) =tri;
@@ -276,6 +278,9 @@ int main(int argc, char** argv) {
         auto results =computeB(nodes,N);
         B =  results.first;
         double detJ= results.second;
+        Liste_B(i) = B;
+        //cout << "Liste B i ;" << Liste_B(i) << endl;
+
         std::cout << "-------------------------------------" << std::endl;
         std::cout << "Matrice B:" << std::endl;
         std::cout << "-------------------------------------" << std::endl;
@@ -299,6 +304,8 @@ int main(int argc, char** argv) {
 
         Table_correspondance_locale <<Table(tri[0],0),Table(tri[0],1),Table(tri[1],0),Table(tri[1],1),Table(tri[2],0),Table(tri[2],1);
         cout << "table de corr : " << Table_correspondance_locale << endl;
+        Table_corr.col(i)=Table_correspondance_locale;
+        //cout <<"Table corr test :" << Table_corr.col(i)<< endl;
         //calcul de la matrice de rigidité globale
          for (int k=0; k<6;k++){
             for (int l=0; l<6; l++){
@@ -337,6 +344,37 @@ int main(int argc, char** argv) {
     VectorXd q= cholesky.solve(F) ;
 
     cout << "q: " << q <<endl;
+
+    // calcul des contraintes et des deformations
+    VectorXd qe(6), sigma(6), eps(6);
+    VectorXi Ti(6);
+
+    qe.setZero();
+    sigma.setZero();
+    eps.setZero();
+    for (int i=0;i<mesh->Get_triangles().size();i++){
+        //deplacement elementaire
+
+        Ti= Table_corr.col(i);
+        for(int k(0); k<6;k++){
+            if (Ti(k)!= -1){
+                qe(k)= q(Ti(k));
+            }
+        }
+
+        //deformation
+
+        eps= Liste_B(i)*qe/2;
+
+        //contraintes
+
+        sigma= D*eps;
+
+        cout << "contrainte :  " << sigma << endl;
+        cout << "deformation : " << eps << endl;
+        qe.setZero();
+
+    }
 
     delete mesh;
     delete data_file;
