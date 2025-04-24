@@ -89,16 +89,15 @@ pair <MatrixXd,VectorXd> computeKe_Fe( MatrixXd B,  MatrixXd D,  double area, do
 
     // Calcul de BtD * B
     MatrixXd Ke(cols,cols );
-    Ke =L*B.transpose()*D*B*detJ/2;
+    Ke =L*B.transpose()*D*B *area;
     
     VectorXd Fe(6);
     Fe.setZero();
     Fe << 0,1,0,1,0,1;
 
-    Fe=-rho*g*L*Fe*50*50/24;
+    Fe=-rho*g*L*Fe*detJ/6;
     //cout << rho*g*50*50/24<< endl;
     //Fe=-rho*g*area*Fe/3;
-
     return {Ke,Fe};
 }
 
@@ -174,7 +173,7 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
 
         //     //double alpha=-rho*g*pow(h,2)*L/24.;
             for (int k=0;k<4;k++){
-                Fe(k)+= -Quadrature(f,coor1,coor2,k)*xy(k)*longueur/2.;
+                Fe(k)+= -Quadrature(f,coor1,coor2,k)*xy(k)*longueur;
 
             }
             for (int k(0); k<4;k++)
@@ -191,6 +190,7 @@ VectorXd computeFe_F_surf(  Mesh2D* _msh,const vector<Edge>& arete_bord, MatrixX
     
     }
     F_surf= F_surf*L;
+    cout << "F surf ; " << F_surf << endl;
     return F_surf;
 }
 
@@ -216,8 +216,8 @@ int main(int argc, char** argv) {
     double E = 15e9; // Module de Young en Pascals
     double nu = 0.25;  // Coefficient de Poisson
     double g=9.8;
-    double rho=1800;
-    double L=100;
+    double rho=2200;
+    double L=1;
 
     // recuperation du maillage
     mesh->Read_mesh(data_file->Get_mesh_name());
@@ -346,9 +346,11 @@ int main(int argc, char** argv) {
     cout << "q: " << q <<endl;
 
     // calcul des contraintes et des deformations
-    VectorXd qe(6), sigma(6), eps(6);
+    VectorXd qe(6), sigma(3), eps(3);
     VectorXi Ti(6);
 
+    q<< 0.00077 , 0.00084, -0.00125, 0.00052, 0.00066,-0.00077,0.00077,-0.00101 ;
+    cout << "q ;" << q << endl;
     qe.setZero();
     sigma.setZero();
     eps.setZero();
@@ -361,10 +363,11 @@ int main(int argc, char** argv) {
                 qe(k)= q(Ti(k));
             }
         }
+        cout << "qe ; " << qe << endl;
 
         //deformation
-
-        eps= Liste_B(i)*qe/2;
+        cout << "B ;" << Liste_B(i);
+        eps= Liste_B(i)*qe;
 
         //contraintes
 

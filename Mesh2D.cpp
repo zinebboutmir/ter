@@ -325,12 +325,12 @@ Eigen::Matrix<bool, Eigen::Dynamic, 2> Mesh2D::Build_Bool(){
    string BC;
    vector<int> arret1,arret2,point;
    Bool_Table.resize(_vertices.size(),2);
-for (int i(0); i< _vertices.size();i++){
-      n1=this-> _edges[i].Get_vertices()(0);
-      n2=this-> _edges[i].Get_vertices()(1);
-      Bool_Table.row(n1) << true, true;
-      Bool_Table.row(n2) << true, true ;
-   }
+   for (int i(0); i< _vertices.size();i++){
+         n1=this-> _edges[i].Get_vertices()(0);
+         n2=this-> _edges[i].Get_vertices()(1);
+         Bool_Table.row(n1) << true, true;
+         Bool_Table.row(n2) << true, true ;
+      }
    for (int i(0); i<_edges.size();i++){
       BC= this->_edges[i].Get_BC() ;
       n1=this-> _edges[i].Get_vertices()(0);
@@ -346,58 +346,44 @@ for (int i(0); i< _vertices.size();i++){
          arret2.push_back(n1);
          arret2.push_back(n2);
       }
-      else{
-         Bool_Table.row(n1) << true, true;
-         Bool_Table.row(n2) << true, true ;
-      }
+      
+      
    }
    sort(arret1.begin(),arret1.end());
    sort(arret2.begin(),arret2.end());
    set_intersection(arret1.begin(),arret1.end(), arret2.begin(),arret2.end(),back_inserter(point));
    Bool_Table(point[0],0)=false;
+
    return Bool_Table;
-
-}
-
-
-Eigen::Matrix<int, Eigen::Dynamic, 2> Mesh2D::Build_CL(){
-
-
-
 
 }
 
 
 Eigen::MatrixXi Mesh2D::Build_Table(){
       int k(0);
-      vector<bool> Bool;
+      Eigen::VectorXi Bool(2);
       Build_Bool();
       Table_degre.resize(_vertices.size(),2);
       for (int i(0); i<_vertices.size();i++){
 
-<<<<<<< HEAD
-         Bool.push_back(Bool_Table(i,0));
-         Bool.push_back(Bool_Table(i,1));
-         if (Bool.front()==true){
-=======
          Bool(0)=(Bool_Table(i,0));
          Bool(1)=(Bool_Table(i,1));
          if (Bool(0)==1){
->>>>>>> 584f48c521c58bc70a53c6ca4a14fffd31d877fb
+
             Table_degre(i,0)=k;
             k=k+1;
          }
-         if (Bool.back()==true){
+         if (Bool(1)==1){
             Table_degre(i,1)=k;
             k=k+1;
          }
-         if(Bool.front()==false){
+         if(Bool(0)==0){
             Table_degre(i,0)=-1;
          }
-         if(Bool.back()==false){
+         if(Bool(1)==0){
             Table_degre(i,1)=-1;
          }   
-         Bool.clear();
+         
       }
       return Table_degre;
 }
